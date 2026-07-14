@@ -423,19 +423,22 @@ async function aiRetime(dayId) {
   const btn = document.querySelector(`.ai-retime[data-day="${dayId}"]`);
   if (btn) { btn.disabled = true; btn.textContent = "🧠 AI 重算時間與車程中…"; }
   try {
-    const list = day.items.map((it, i) =>
-      `${i + 1}. id=${it.id} | ${TYPE_LABEL[it.type] || "行程"} | ${it.title} | 目前時間:${it.time || "(未定)"}${it.travel && it.travel.minutes ? ` | 原車程:${it.travel.minutes}分` : ""}`
-    ).join("\n");
+    // 只給停留長度、不給舊時間,避免 AI 直接照抄舊時段而不依新順序重算
+    const list = day.items.map((it, i) => {
+      const stay = timeRangeMinutes(it.time);
+      return `${i + 1}. id=${it.id} | ${TYPE_LABEL[it.type] || "行程"} | ${it.title}${stay ? ` | 停留約:${stay}分` : ""}`;
+    }).join("\n");
     const firstTime = (String(day.items[0].time).match(/\d{1,2}:\d{2}/) || ["08:00"])[0];
     const prompt = [
       `你是台灣自駕旅遊排程助手。8 人自駕環島,${day.name} 路線:${day.route}。`,
-      `以下是今天「依序」的停靠點:`,
+      `行程順序剛被調整過,舊的時間已全部失效。以下是今天「新的順序」:`,
       list,
-      `請依這個順序排定時間與車程:`,
-      `- 第一個停靠點從 ${firstTime} 開始,整天依序連貫、不可重疊`,
-      `- travel_minutes = 從前一站開車到該站的分鐘數,依台灣實際路況估算;第一項為 0;同一地點或步行可達給 0`,
-      `- 各站時間需已含前段車程;景點/餐食給合理停留時間;午餐盡量 11:00-13:30、晚餐 18:00-20:30`,
-      `- 時間格式 "HH:MM-HH:MM";最後一項若是抵達/休息可只給起始 "HH:MM"`,
+      `請「嚴格依照這個順序」從頭重新計算每一站的到達與離開時間:`,
+      `- 第 1 站從 ${firstTime} 開始;之後每一站的開始時間 = 前一站結束時間 + 車程,整天連貫、不可重疊、不可回到舊時間`,
+      `- travel_minutes = 從前一站開車到該站的分鐘數,依兩站實際地點與台灣路況估算;第 1 站為 0;同一地點或步行可達給 0`,
+      `- 各站停留長度盡量沿用「停留約」;午餐盡量 11:00-13:30、晚餐 18:00-20:30,可微調停留來配合`,
+      `- 時間格式 "HH:MM-HH:MM";最後一站若是抵達/休息可只給起始 "HH:MM"`,
+      `- 回傳的 items 必須與上面同樣順序、同樣的 id,一項都不能少`,
       `僅回傳 JSON:{"items":[{"id":"...","time":"...","travel_minutes":數字}]}`,
     ].join("\n");
     const ep = aiEndpoint("deepseek");
