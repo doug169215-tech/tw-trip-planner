@@ -212,7 +212,7 @@ function renderPanels() {
 function renderOverview() {
   const act = activeDay === "overview" ? "active" : "";
   const summaryRows = data.days.map((d) =>
-    `<tr><td><b>${esc(d.name.replace(/^Day\s*/, "D"))}</b><br><small>${esc(d.weekday)}</small></td><td>${esc(d.route)}</td><td>${esc(d.lodging || "—")}</td></tr>`
+    `<tr><td><b>${esc(d.name.replace(/^Day\s*/, "D"))}</b><br><small>${esc(d.weekday)}</small></td><td>${esc(d.route)}</td><td>${lodgingHtml(d) || "—"}</td></tr>`
   ).join("");
   return `
   <section class="day-panel ${act}" data-panel="overview">
@@ -239,6 +239,14 @@ function renderOverview() {
   </section>`;
 }
 
+// 住宿文字,有 lodgingUrl 時包成 Google Maps 連結
+function lodgingHtml(day) {
+  if (!day.lodging) return "";
+  return day.lodgingUrl
+    ? `<a class="lodging-link" href="${esc(day.lodgingUrl)}" target="_blank" rel="noopener" title="在 Google Maps 開啟">${esc(day.lodging)} 📍</a>`
+    : esc(day.lodging);
+}
+
 function renderDay(day) {
   const act = activeDay === day.id ? "active" : "";
   return `
@@ -246,7 +254,7 @@ function renderDay(day) {
     <div class="day-head">
       <h2>${esc(day.name)}(${esc(day.weekday)})|${esc(day.title)}</h2>
       <p class="day-route">${esc(day.route)}</p>
-      ${day.lodging ? `<p class="day-lodging">🏠 住宿:${esc(day.lodging)}</p>` : ""}
+      ${day.lodging ? `<p class="day-lodging">🏠 住宿:${lodgingHtml(day)}</p>` : ""}
       ${(day.trafficTips || []).map((t) => `<div class="traffic-tip">🚦 ${esc(t)}</div>`).join("")}
       <div class="weather-row" data-wday="${day.id}"></div>
     </div>

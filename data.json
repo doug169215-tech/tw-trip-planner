@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-14T11:42:14.298Z",
+  "updatedAt": "2026-07-14T12:21:07.000Z",
   "startDate": "2026-07-17",
   "title": "四天三夜環島|海線主軸版",
   "subtitle": "8 人自駕 · 台11線海線為主 · 新竹出發(週五-週一)",
@@ -39,6 +39,7 @@
       "title": "西岸南下與古都漫遊",
       "route": "新竹 → 台中 → 台南 → 枋山 → 恆春",
       "lodging": "墾丁芃家 Villa",
+      "lodgingUrl": "https://maps.app.goo.gl/kHUsK5D9xZFD8zYr6",
       "trafficTips": [
         "下午 2:30 前離開台南,避開傍晚南下墾丁的週末車潮。"
       ],
@@ -161,6 +162,7 @@
       "title": "南迴跨越與熱氣球嘉年華",
       "route": "恆春 → 南迴 → 台東 → 鹿野 → 台東市",
       "lodging": "廷海特潮流民宿(台東市浙江路 70 號)",
+      "lodgingUrl": "https://share.google/T2GDsiKo3HeoUU2WN",
       "trafficTips": [
         "熱氣球期間鹿野高台塞車、搶車位;另一版本建議 14:15 前抵達卡位。"
       ],
@@ -293,7 +295,8 @@
       "weekday": "週日",
       "title": "台東深度遊 → 台11海線北上",
       "route": "台東 → 小野柳 → 成功 → 三仙台 → 石梯坪 → 花蓮市",
-      "lodging": "花蓮市區(建議東大門夜市或花蓮車站周邊)",
+      "lodging": "熙家民宿",
+      "lodgingUrl": "https://share.google/ZoDSbZCqu0t25aD4x",
       "trafficTips": [
         "走台 11 線海岸公路,欣賞東海岸海景,沿途定點休息。"
       ],
@@ -405,7 +408,7 @@
         {
           "id": "d3-14",
           "time": "19:45",
-          "title": "入住花蓮市區住宿",
+          "title": "入住熙家民宿",
           "type": "stay",
           "note": "",
           "intro": ""
@@ -594,6 +597,11 @@
     }
   ],
   "history": [
+    {
+      "ts": "2026-07-14T12:21:07.000Z",
+      "user": "系統",
+      "text": "更新三晚住宿並附 Google Maps 連結:D1 墾丁芃家 Villa、D2 廷海特潮流民宿、D3 熙家民宿"
+    },
     {
       "ts": "2026-07-14T11:42:14.298Z",
       "user": "狗狗",
