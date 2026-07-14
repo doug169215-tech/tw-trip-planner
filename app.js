@@ -193,14 +193,6 @@ function renderPanels() {
     btn.onclick = () => openItemModal(btn.dataset.day, null);
   });
 
-  // 出發日設定
-  const sd = $("#start-date");
-  if (sd) sd.onchange = () => {
-    data.startDate = sd.value || undefined;
-    commit(sd.value ? `設定出發日為 ${sd.value}` : "清除出發日");
-    renderWeather();
-  };
-
   renderWeather();
 
   // 拖曳排序(跨天共用群組)
@@ -225,10 +217,7 @@ function renderOverview() {
   return `
   <section class="day-panel ${act}" data-panel="overview">
     <div class="day-head">
-      <label class="startdate-row">🗓️ 出發日(Day 1):
-        <input type="date" id="start-date" value="${esc(data.startDate || "")}">
-        <small>設定後各天自動顯示對應日期的天氣預報(全團共用)</small>
-      </label>
+      <p class="startdate-row">🗓️ 出發日(Day 1):<b>2026/7/17(週五)</b><small>各天自動顯示對應日期的天氣預報</small></p>
     </div>
     <div class="day-head">
       <h2>行程原則</h2>
@@ -416,7 +405,26 @@ async function runAI() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const j = await res.json();
       if (j.answer) {
-        $("#item-intro").value = j.answer;
+        let intro = j.answer;
+        // Tavily 偶爾回英文:偵測到大量英文就交給 DeepSeek 翻成繁體中文
+        const latin = (intro.match(/[A-Za-z]/g) || []).length;
+        if (latin > intro.length * 0.3) {
+          status.textContent = "🈶 翻譯景點介紹為中文…";
+          try {
+            const dep = aiEndpoint("deepseek");
+            const tr = await fetch(dep.url, {
+              method: "POST",
+              headers: dep.headers,
+              body: JSON.stringify({
+                model: "deepseek-chat",
+                messages: [{ role: "user", content: `將以下景點介紹翻譯成繁體中文,語氣自然,只回傳譯文:\n\n${intro}` }],
+                temperature: 0.2,
+              }),
+            });
+            if (tr.ok) intro = (await tr.json()).choices[0].message.content.trim();
+          } catch {}
+        }
+        $("#item-intro").value = intro;
         parts.push("✅ 已取得景點介紹(Tavily)");
       } else parts.push("⚠️ Tavily 沒有回傳摘要");
     } catch (e) {
@@ -540,11 +548,9 @@ function wmoIcon(code) {
   return ["⛈️", "雷雨"];
 }
 
+const TRIP_START = "2026-07-17"; // 出發日固定,不開放修改
 function tripStartDate() {
-  if (data.startDate) return new Date(data.startDate + "T00:00:00");
-  const d = new Date(); d.setHours(0, 0, 0, 0);
-  d.setDate(d.getDate() + (((5 - d.getDay() + 7) % 7) || 7)); // 預設:下一個週五
-  return d;
+  return new Date(TRIP_START + "T00:00:00");
 }
 const localISO = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
@@ -595,7 +601,7 @@ function renderWeather() {
     if (chips.length) {
       row.innerHTML = `<span class="wx-date">🗓️ ${dateLabel}</span>` + chips.join("");
     } else if (Object.keys(weather.points).length) {
-      row.innerHTML = `<span class="wx-date">🗓️ ${dateLabel} 距今較遠,進入 16 天預報範圍後自動顯示${data.startDate ? "" : "(請先在總覽設定出發日)"}</span>`;
+      row.innerHTML = `<span class="wx-date">🗓️ ${dateLabel} 距今較遠,進入 16 天預報範圍後自動顯示</span>`;
     } else {
       row.innerHTML = `<span class="wx-date">天氣載入中…</span>`;
     }
