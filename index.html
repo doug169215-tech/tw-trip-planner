@@ -48,7 +48,10 @@
 <div id="item-modal" class="overlay hidden">
   <div class="modal">
     <h2 id="item-modal-title">編輯行程點</h2>
-    <label>時間<input id="item-time" type="text" placeholder="例:10:10-11:00"></label>
+    <div class="time-row">
+      <label>開始時間<input id="item-time-start" type="time"></label>
+      <label>結束時間<input id="item-time-end" type="time"><small>(可留空,如「抵達」類行程)</small></label>
+    </div>
     <label>名稱<input id="item-title" type="text" placeholder="地點或活動名稱"></label>
     <label>類型
       <select id="item-type">

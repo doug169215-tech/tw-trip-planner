@@ -202,6 +202,9 @@ main { max-width: 60rem; margin: 0 auto; padding: 1rem 1.2rem; }
 }
 .auto-daily.muted { color: var(--ink-soft); }
 .tag-book { background: #ffe1b8; color: #8a4b00; }
+.time-row { display: flex; gap: .8rem; }
+.time-row label { flex: 1; }
+.time-row small { display: block; font-size: .72rem; color: #888; font-weight: 400; }
 .quick-add { display: flex; gap: .5rem; align-items: center; margin-top: .55rem; }
 .quick-add input {
   flex: 1; min-width: 0; font-family: inherit; font-size: .92rem;

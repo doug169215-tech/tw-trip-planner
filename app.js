@@ -608,7 +608,10 @@ function openItemModal(dayId, itemId) {
   const it = itemId ? day.items.find((i) => i.id === itemId) : null;
 
   $("#item-modal-title").textContent = it ? `編輯行程點(${day.name})` : `新增地點到 ${day.name}`;
-  $("#item-time").value = it ? it.time : "";
+  const tm = String(it ? it.time : "").match(/(\d{1,2}):(\d{2})(?:\s*-\s*(\d{1,2}):(\d{2}))?/);
+  const pad = (h, m) => `${String(h).padStart(2, "0")}:${m}`;
+  $("#item-time-start").value = tm ? pad(tm[1], tm[2]) : "";
+  $("#item-time-end").value = tm && tm[3] ? pad(tm[3], tm[4]) : "";
   $("#item-title").value = it ? it.title : "";
   $("#item-type").value = it ? it.type : "spot";
   $("#item-note").value = it ? it.note : "";
@@ -623,7 +626,7 @@ function saveItem() {
   const { dayId, itemId } = editing;
   const day = data.days.find((d) => d.id === dayId);
   const vals = {
-    time: $("#item-time").value.trim(),
+    time: [$("#item-time-start").value, $("#item-time-end").value].filter(Boolean).join("-"),
     title: $("#item-title").value.trim(),
     type: $("#item-type").value,
     note: $("#item-note").value.trim(),
@@ -746,7 +749,11 @@ async function runAI() {
       const out = JSON.parse(j.choices[0].message.content);
       aiFill = out;
       const suggest = suggestTime(prevItem, out.travel_minutes, out.stay_minutes);
-      if (suggest && !$("#item-time").value.trim()) $("#item-time").value = suggest;
+      if (suggest && !$("#item-time-start").value) {
+        const [s, e] = suggest.split("-");
+        $("#item-time-start").value = s || "";
+        $("#item-time-end").value = e || "";
+      }
       const noteAdd = `車程約 ${out.travel_minutes} 分鐘,建議停留 ${out.stay_minutes} 分鐘`;
       if (!$("#item-note").value.trim()) $("#item-note").value = noteAdd + (out.advice ? ";" + out.advice : "");
       parts.push(`✅ DeepSeek:${noteAdd}${out.advice ? "。" + out.advice : ""}`);
