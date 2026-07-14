@@ -231,7 +231,7 @@ function renderPanels() {
     };
   });
   main.querySelectorAll(".add-item-btn").forEach((btn) => {
-    btn.onclick = () => openItemModal(btn.dataset.day, null);
+    btn.onclick = () => startQuickAdd(btn);
   });
   main.querySelectorAll(".ai-retime").forEach((btn) => {
     btn.onclick = () => aiRetime(btn.dataset.day);
@@ -307,7 +307,7 @@ function renderDay(day) {
     <div class="item-list" data-day="${day.id}">
       ${day.items.map((it, i) => (i > 0 ? renderLeg(day, it) : "") + renderItem(it)).join("")}
     </div>
-    <button class="add-item-btn" data-day="${day.id}">＋ 新增地點(可用 AI 智慧辨識)</button>
+    <button class="add-item-btn" data-day="${day.id}">＋ 新增地點(只填名稱,AI 自動補時間/類型/介紹)</button>
     <div class="day-extras">
       ${renderRestaurants(day)}
       ${renderList("🧭 沿途備選", day.alternates)}
@@ -338,7 +338,7 @@ function renderItem(it) {
       <div class="item-top">
         <span class="item-time">${esc(it.time)}</span>
         <span class="item-title">${esc(it.title)}</span>${mapLink}
-        <span class="type-badge">${TYPE_LABEL[it.type] || "行程"}</span>
+        <span class="type-badge">${it.aiPending ? "🧠 AI 補全中…" : TYPE_LABEL[it.type] || "行程"}</span>
         <span class="item-wx" data-wxitem="${it.id}"></span>
       </div>
       ${it.note ? `<p class="item-note">${esc(it.note)}</p>` : ""}
@@ -413,6 +413,110 @@ function scheduleRetime(dayId) {
   retimePending[dayId] = true;
   clearTimeout(retimeTimers[dayId]);
   retimeTimers[dayId] = setTimeout(() => aiRetime(dayId), 3000);
+}
+
+// ─── 快速新增:只填名稱,AI 補全類型/介紹,拖到位置後自動排時間 ──
+function startQuickAdd(btn) {
+  const dayId = btn.dataset.day;
+  const wrap = document.createElement("div");
+  wrap.className = "quick-add";
+  wrap.innerHTML = `
+    <input type="text" maxlength="40" placeholder="輸入地點名稱(Enter 加入),其餘 AI 自動補全">
+    <button class="btn btn-primary">加入</button>
+    <button class="btn btn-ghost">取消</button>`;
+  btn.replaceWith(wrap);
+  const input = wrap.querySelector("input");
+  const [ok, cancel] = wrap.querySelectorAll("button");
+  ok.onclick = () => {
+    const title = input.value.trim();
+    if (!title) { toast("請輸入地點名稱"); return; }
+    quickAdd(dayId, title);
+  };
+  cancel.onclick = () => renderPanels();
+  input.onkeydown = (e) => {
+    if (e.key === "Enter") ok.onclick();
+    if (e.key === "Escape") renderPanels();
+  };
+  input.focus();
+}
+
+function quickAdd(dayId, title) {
+  const day = data.days.find((d) => d.id === dayId);
+  const item = { id: uid(), time: "", title, type: "spot", note: "", intro: "", aiPending: true };
+  day.items.push(item);
+  commit(`新增「${title}」到 ${day.name}(AI 補全中)`);
+  renderPanels();
+  toast(`已加入「${title}」,AI 補全中;現在就可以把它拖到想要的位置`, 4200);
+  aiComplete(dayId, item.id);
+}
+
+async function aiComplete(dayId, itemId) {
+  const findItem = () => {
+    for (const d of data.days) { const it = d.items.find((i) => i.id === itemId); if (it) return [d, it]; }
+    return [null, null];
+  };
+  let [day, it] = findItem();
+  if (!it) return;
+  const ep = aiEndpoint("deepseek");
+
+  // 1) DeepSeek:判斷類型與實用提示
+  try {
+    const res = await fetch(ep.url, {
+      method: "POST",
+      headers: ep.headers,
+      body: JSON.stringify({
+        model: "deepseek-chat",
+        messages: [{ role: "user", content: [
+          `台灣旅遊行程助手。${day.name} 路線:${day.route}。新地點:「${it.title}」。`,
+          `判斷:1) type 四選一:spot(景點)/meal(餐食)/stay(住宿或休息)/prep(加油、補給等整備)`,
+          `2) note:20 字內的實用提示(停車、必點、注意事項擇一重點)`,
+          `僅回傳 JSON:{"type":"...","note":"..."}`,
+        ].join("\n") }],
+        response_format: { type: "json_object" },
+        temperature: 0.2,
+      }),
+    });
+    if (res.ok) {
+      const out = JSON.parse((await res.json()).choices[0].message.content);
+      [day, it] = findItem(); if (!it) return; // 可能已被刪除或拖到別天
+      if (TYPE_LABEL[out.type]) it.type = out.type;
+      if (out.note && !it.note) it.note = String(out.note).slice(0, 60);
+    }
+  } catch {}
+
+  // 2) Tavily:景點介紹(英文自動翻中)
+  try {
+    const tv = aiEndpoint("tavily");
+    const res = await fetch(tv.url, {
+      method: "POST",
+      headers: tv.headers,
+      body: JSON.stringify({ query: `台灣 ${it.title} 介紹 特色`, search_depth: "basic", include_answer: true, max_results: 3 }),
+    });
+    if (res.ok) {
+      const j = await res.json();
+      let intro = j.answer || "";
+      if (intro && (intro.match(/[A-Za-z]/g) || []).length > intro.length * 0.3) {
+        const tr = await fetch(ep.url, {
+          method: "POST",
+          headers: ep.headers,
+          body: JSON.stringify({
+            model: "deepseek-chat",
+            messages: [{ role: "user", content: `將以下景點介紹翻譯成繁體中文,語氣自然,只回傳譯文:\n\n${intro}` }],
+            temperature: 0.2,
+          }),
+        });
+        if (tr.ok) intro = (await tr.json()).choices[0].message.content.trim();
+      }
+      [day, it] = findItem(); if (!it) return;
+      if (intro && !it.intro) it.intro = intro;
+    }
+  } catch {}
+
+  [day, it] = findItem(); if (!it) return;
+  delete it.aiPending;
+  commit(`AI 補全「${it.title}」的類型與介紹`);
+  renderPanels();
+  aiRetime(day.id); // 依目前位置排入時間與車程
 }
 
 // ─── AI 重排整天時間與車程(拖曳後自動觸發,也可手動按按鈕) ─────

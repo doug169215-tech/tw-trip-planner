@@ -190,6 +190,13 @@ main { max-width: 60rem; margin: 0 auto; padding: 1rem 1.2rem; }
   background: rgba(255, 255, 255, .88); color: var(--sea);
 }
 .item-card[data-type="meal"] .type-badge { color: var(--sun); }
+.quick-add { display: flex; gap: .5rem; align-items: center; margin-top: .55rem; }
+.quick-add input {
+  flex: 1; min-width: 0; font-family: inherit; font-size: .92rem;
+  border: 1px solid rgba(255, 255, 255, .5); border-radius: 10px;
+  background: rgba(255, 255, 255, .92); color: var(--sea);
+  padding: .5em .8em;
+}
 .leg {
   font-size: .78rem; color: rgba(255, 255, 255, .78); font-weight: 600;
   padding: 0 .5em 0 2.1em; margin: -.15rem 0;
