@@ -190,6 +190,8 @@ main { max-width: 60rem; margin: 0 auto; padding: 1rem 1.2rem; }
   background: rgba(255, 255, 255, .88); color: var(--sea);
 }
 .item-card[data-type="meal"] .type-badge { color: var(--sun); }
+.map-link { text-decoration: none; font-size: .88rem; line-height: 1; }
+.map-link:hover { filter: brightness(1.3); }
 .item-wx {
   font-size: .78rem; font-weight: 700; white-space: nowrap;
   color: #eaf7fb; font-variant-numeric: tabular-nums;

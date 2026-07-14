@@ -185,7 +185,7 @@ function renderPanels() {
   // 綁定行程卡片
   main.querySelectorAll(".item-card").forEach((card) => {
     card.onclick = (e) => {
-      if (e.target.closest(".drag-handle") || e.target.closest("details")) return;
+      if (e.target.closest(".drag-handle") || e.target.closest("details") || e.target.closest("a")) return;
       openItemModal(card.closest(".item-list").dataset.day, card.dataset.id);
     };
   });
@@ -212,7 +212,7 @@ function renderPanels() {
 function renderOverview() {
   const act = activeDay === "overview" ? "active" : "";
   const summaryRows = data.days.map((d) =>
-    `<tr><td><b>${esc(d.name)}</b><br><small>${esc(d.weekday)}</small></td><td>${esc(d.route)}</td><td>${esc(d.lodging || "—")}</td></tr>`
+    `<tr><td><b>${esc(d.name.replace(/^Day\s*/, "D"))}</b><br><small>${esc(d.weekday)}</small></td><td>${esc(d.route)}</td><td>${esc(d.lodging || "—")}</td></tr>`
   ).join("");
   return `
   <section class="day-panel ${act}" data-panel="overview">
@@ -263,13 +263,18 @@ function renderDay(day) {
 }
 
 function renderItem(it) {
+  // 景點/餐食/可辨識地名的行程點,附 Google Maps 連結(車程與整備不附)
+  const mappable = it.type !== "transport" && it.type !== "prep" && (it.type === "spot" || it.type === "meal" || matchPlace(it.title));
+  const mapLink = mappable
+    ? `<a class="map-link" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(it.title)}" target="_blank" rel="noopener" title="在 Google Maps 開啟「${esc(it.title)}」">📍</a>`
+    : "";
   return `
   <div class="item-card" data-id="${it.id}" data-type="${esc(it.type)}">
     <span class="drag-handle" title="拖曳調整順序">⠿</span>
     <div class="item-body">
       <div class="item-top">
         <span class="item-time">${esc(it.time)}</span>
-        <span class="item-title">${esc(it.title)}</span>
+        <span class="item-title">${esc(it.title)}</span>${mapLink}
         <span class="type-badge">${TYPE_LABEL[it.type] || "行程"}</span>
         <span class="item-wx" data-wxitem="${it.id}"></span>
       </div>
