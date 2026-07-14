@@ -10,23 +10,18 @@
 - **AI 智慧辨識**(新增地點時):
   - **DeepSeek**:估算前一站到新地點的車程分鐘數、建議停留時間,自動帶入建議時段
   - **Tavily**:自動搜尋並填入景點介紹
-- **全團同步**:行程資料存於本 repo 的 `data.json`;讀取免登入,寫入需在「⚙️ 設定」填入 GitHub token
+- **天氣預報**:各天顯示沿途城鎮預報;每張行程卡片依「地點+時段」顯示逐時天氣(Open-Meteo 免金鑰,自動辨識卡片標題中的地名),每 30 分鐘自動更新
+- **全團同步**:修改後自動上傳、每 60 秒自動載入團員最新版;資料存於本 repo 的 `data.json`
 
 ## 使用方式
 
 1. 開啟網頁 → 輸入你的名字
 2. 拖曳/點擊卡片修改行程,「＋ 新增地點」可用 AI 智慧辨識
-3. 改完按「⬆️ 同步到 GitHub」分享給團員;其他人按「⬇️ 取得最新行程」
+3. 改完會自動同步給全團,零設定
 
-## 設定(⚙️)
+## 金鑰
 
-| 項目 | 用途 | 取得方式 |
-|---|---|---|
-| DeepSeek API Key | 車程/停留時間估算 | https://platform.deepseek.com |
-| Tavily API Key | 景點介紹搜尋 | https://tavily.com |
-| GitHub Token | 寫入 `data.json`(同步行程) | GitHub → Settings → Developer settings → Fine-grained token,僅授權本 repo 的 Contents 讀寫 |
-
-所有金鑰僅儲存在你自己瀏覽器的 localStorage,不會上傳到任何地方(API 呼叫直接由瀏覽器發出)。
+團員完全不需設定。DeepSeek / Tavily / GitHub 的金鑰全部保管在 Cloudflare Worker(`worker/`)的伺服器端 Secrets,網頁與 repo 不含任何金鑰。
 
 ## 資料來源
 

@@ -2,14 +2,13 @@
 "use strict";
 
 // ─── 常數與狀態 ───────────────────────────────────────────────
-const LS = { data: "ttp.data", user: "ttp.user", settings: "ttp.settings" };
+const LS = { data: "ttp.data", user: "ttp.user" };
 const TYPE_EMOJI = { spot: "🏞️", meal: "🍜", transport: "🚗", stay: "🏠", prep: "🧳" };
 const TYPE_LABEL = { spot: "景點", meal: "餐食", transport: "車程", stay: "住宿/休息", prep: "整備" };
 
 let data = null;          // 行程資料(含 history)
 let currentUser = null;
-const DEFAULT_PROXY = "https://trip-ai-proxy.doug169215.workers.dev"; // 內建代理(AI+同步),團員免設定
-let settings = { deepseek: "", tavily: "", proxy: DEFAULT_PROXY };
+const PROXY = "https://trip-ai-proxy.doug169215.workers.dev"; // 內建代理(AI+同步),金鑰保管在 Cloudflare Worker
 let dirty = false;        // 本機有未同步修改
 let activeDay = "overview";
 let editing = null;       // { dayId, itemId } 或 { dayId, itemId:null }(新增)
@@ -17,7 +16,7 @@ let aiFill = null;        // AI 辨識結果暫存
 let sortables = [];
 let syncTimer = null;     // 自動上傳的 debounce 計時器
 let syncing = false;
-const proxyUrl = (p) => settings.proxy.replace(/\/+$/, "") + p;
+const proxyUrl = (p) => PROXY + p;
 
 const $ = (sel) => document.querySelector(sel);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -25,7 +24,6 @@ const uid = () => "i" + Date.now().toString(36) + Math.random().toString(36).sli
 
 // ─── 初始化 ───────────────────────────────────────────────────
 async function init() {
-  try { settings = { ...settings, ...JSON.parse(localStorage.getItem(LS.settings) || "{}") }; } catch {}
   currentUser = localStorage.getItem(LS.user) || null;
 
   await loadData();
@@ -84,7 +82,6 @@ function scheduleSync() {
 }
 
 async function autoSync() {
-  if (!settings.proxy) { setSyncStatus("⚠️ 未設定代理,修改僅存於本機", true); return; }
   if (syncing) { clearTimeout(syncTimer); syncTimer = setTimeout(autoSync, 2000); return; }
   syncing = true;
   setSyncStatus("☁️ 自動上傳中…", true);
@@ -111,7 +108,7 @@ async function autoSync() {
 
 // 定時抓團員的最新版本(自己有未上傳修改時跳過,避免蓋掉)
 async function pollRemote() {
-  if (dirty || syncing || !settings.proxy) return;
+  if (dirty || syncing) return;
   try {
     const res = await fetch(proxyUrl("/data?t=" + Date.now()), { cache: "no-store" });
     if (!res.ok) return;
@@ -391,21 +388,12 @@ function deleteItem() {
 }
 
 // ─── AI 智慧辨識(DeepSeek 車程估算 + Tavily 景點介紹) ────────
-// 代理模式(預設):走 Worker 代理,金鑰留在伺服器端;清空代理網址則改用自填金鑰
-const useProxy = () => !!settings.proxy;
-const aiEndpoint = (svc) => useProxy()
-  ? { url: settings.proxy.replace(/\/+$/, "") + "/" + svc, headers: { "Content-Type": "application/json" } }
-  : svc === "deepseek"
-    ? { url: "https://api.deepseek.com/chat/completions", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${settings.deepseek}` } }
-    : { url: "https://api.tavily.com/search", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${settings.tavily}` } };
+// 一律走 Worker 代理,金鑰留在伺服器端
+const aiEndpoint = (svc) => ({ url: PROXY + "/" + svc, headers: { "Content-Type": "application/json" } });
 
 async function runAI() {
   const title = $("#item-title").value.trim();
   if (!title) { toast("請先填寫地點名稱"); return; }
-  if (!useProxy() && !settings.deepseek && !settings.tavily) {
-    toast("請到 ⚙️ 設定填入 Worker 代理網址或 API Key");
-    return;
-  }
   const status = $("#ai-status");
   const result = $("#ai-result");
   status.classList.remove("hidden");
@@ -416,7 +404,7 @@ async function runAI() {
   const parts = [];
 
   // 1) Tavily:景點介紹
-  if (useProxy() || settings.tavily) {
+  {
     status.textContent = "🔍 Tavily 搜尋景點介紹中…";
     try {
       const ep = aiEndpoint("tavily");
@@ -437,7 +425,7 @@ async function runAI() {
   }
 
   // 2) DeepSeek:車程與停留時間估算
-  if (useProxy() || settings.deepseek) {
+  {
     status.textContent = "🧠 DeepSeek 估算車程與停留時間中…";
     try {
       const prompt = [
@@ -657,22 +645,6 @@ function doLogin() {
   toast(`👋 歡迎,${name}!`);
 }
 
-function openSettings() {
-  $("#set-proxy").value = settings.proxy;
-  $("#set-deepseek").value = settings.deepseek;
-  $("#set-tavily").value = settings.tavily;
-  $("#settings-modal").classList.remove("hidden");
-}
-
-function saveSettings() {
-  settings.proxy = $("#set-proxy").value.trim();
-  settings.deepseek = $("#set-deepseek").value.trim();
-  settings.tavily = $("#set-tavily").value.trim();
-  localStorage.setItem(LS.settings, JSON.stringify(settings));
-  $("#settings-modal").classList.add("hidden");
-  toast("✅ 設定已儲存(僅存於此瀏覽器)");
-}
-
 function openHistory() {
   const list = $("#history-list");
   list.innerHTML = (data.history || []).map((h) => `
@@ -683,56 +655,17 @@ function openHistory() {
   $("#history-modal").classList.remove("hidden");
 }
 
-function exportJSON() {
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = `環島行程-${new Date().toISOString().slice(0, 10)}.json`;
-  a.click();
-  URL.revokeObjectURL(a.href);
-}
-
-function importJSON(file) {
-  const reader = new FileReader();
-  reader.onload = () => {
-    try {
-      const j = JSON.parse(reader.result);
-      if (!j.days || !Array.isArray(j.days)) throw new Error("格式不符");
-      data = j;
-      commit("匯入 JSON 行程檔");
-      renderAll();
-      toast("✅ 已匯入");
-    } catch (e) { toast("❌ 匯入失敗:" + e.message); }
-  };
-  reader.readAsText(file);
-}
-
-function resetData() {
-  if (!confirm("確定重設為預設行程?你的本機修改將被清除(線上版本不受影響)。")) return;
-  data = structuredClone(window.DEFAULT_DATA);
-  commit("重設為預設行程");
-  renderAll();
-  toast("已重設");
-}
-
 // ─── 事件綁定 ─────────────────────────────────────────────────
 function bindGlobalEvents() {
   $("#login-btn").onclick = doLogin;
   $("#login-name").addEventListener("keydown", (e) => { if (e.key === "Enter") doLogin(); });
   $("#btn-user").onclick = showLogin;
-  $("#btn-settings").onclick = openSettings;
-  $("#settings-save").onclick = saveSettings;
   $("#btn-history").onclick = openHistory;
 
   $("#item-save").onclick = saveItem;
   $("#item-cancel").onclick = () => $("#item-modal").classList.add("hidden");
   $("#item-delete").onclick = deleteItem;
   $("#btn-ai").onclick = runAI;
-
-  $("#btn-export").onclick = exportJSON;
-  $("#btn-import").onclick = () => $("#import-file").click();
-  $("#import-file").onchange = (e) => { if (e.target.files[0]) importJSON(e.target.files[0]); e.target.value = ""; };
-  $("#btn-reset").onclick = resetData;
 
   document.querySelectorAll(".modal-close").forEach((b) => {
     b.onclick = () => b.closest(".overlay").classList.add("hidden");

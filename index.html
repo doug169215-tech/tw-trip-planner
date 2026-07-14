@@ -31,7 +31,6 @@
   <div class="header-actions">
     <span id="sync-badge" class="sync-badge" title="同步狀態">●</span>
     <button id="btn-history" class="btn btn-ghost" title="修改紀錄">📜 紀錄</button>
-    <button id="btn-settings" class="btn btn-ghost" title="設定">⚙️ 設定</button>
     <button id="btn-user" class="btn btn-user" title="切換使用者">👤 <span id="user-name"></span></button>
   </div>
 </header>
@@ -84,32 +83,6 @@
     <div class="modal-actions">
       <span class="spacer"></span>
       <button class="btn btn-ghost modal-close">關閉</button>
-    </div>
-  </div>
-</div>
-
-<!-- 設定 -->
-<div id="settings-modal" class="overlay hidden">
-  <div class="modal">
-    <h2>⚙️ 設定</h2>
-    <h3>AI 代理(已內建 · 免設定)</h3>
-    <label>Worker 代理網址<input id="set-proxy" type="text" placeholder="https://trip-ai-proxy.xxx.workers.dev"></label>
-    <p class="settings-hint">預設已填好團用代理,AI 智慧辨識開箱即用;金鑰由團長保管在 Cloudflare Worker。清空此欄則改用下方自填金鑰。</p>
-    <h3>或:直接填 API 金鑰</h3>
-    <label>DeepSeek API Key<input id="set-deepseek" type="password" placeholder="sk-… (用於車程/停留時間估算)"></label>
-    <label>Tavily API Key<input id="set-tavily" type="password" placeholder="tvly-… (用於景點介紹搜尋)"></label>
-    <h3>資料</h3>
-    <p class="settings-hint">行程修改後會自動同步給全團(經由團用代理),無需任何設定。</p>
-    <div class="settings-row">
-      <button id="btn-export" class="btn btn-ghost">匯出 JSON</button>
-      <button id="btn-import" class="btn btn-ghost">匯入 JSON</button>
-      <button id="btn-reset" class="btn btn-danger">重設為預設行程</button>
-      <input id="import-file" type="file" accept=".json" class="hidden">
-    </div>
-    <div class="modal-actions">
-      <span class="spacer"></span>
-      <button class="btn btn-ghost modal-close">關閉</button>
-      <button id="settings-save" class="btn btn-primary">儲存設定</button>
     </div>
   </div>
 </div>
