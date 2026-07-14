@@ -63,6 +63,21 @@ async function loadData() {
     if (local && !remote) dirty = true;
   }
   migrateTransports(data); // 舊版車程卡(如果還有)折疊為停靠點的 travel 資訊
+  normalizeAnchors(data);  // 每天第一張標記為出發錨點
+}
+
+// 每天第一個行程點=出發錨點(固定第一、不可拖曳/刪除、只有出發時間);其餘清除標記
+function normalizeAnchors(d) {
+  for (const day of d.days) {
+    day.items.forEach((it, i) => {
+      if (i === 0) {
+        it.anchor = true;
+        delete it.travel;
+        const m = String(it.time).match(/\d{1,2}:\d{2}/); // 只保留出發(起始)時間
+        if (m) it.time = m[0];
+      } else if (it.anchor) delete it.anchor;
+    });
+  }
 }
 
 // ─── 車程卡遷移:transport 卡折疊為下一個停靠點的 travel:{minutes,note} ──
@@ -156,6 +171,7 @@ async function pollRemote() {
     if (new Date(remote.updatedAt) > new Date(data.updatedAt)) {
       data = remote;
       migrateTransports(data); // 團員舊版資料若含車程卡,在本機即時折疊(不回寫)
+      normalizeAnchors(data);
       localStorage.setItem(LS.data, JSON.stringify(data));
       renderAll();
       setSyncStatus("⬇️ 已載入團員的最新修改", false);
@@ -207,6 +223,7 @@ function renderTabs() {
 }
 
 function renderPanels() {
+  normalizeAnchors(data); // 保證每天第一張=出發錨點(只有出發時間、不可拖/刪)
   sortables.forEach((s) => s.destroy());
   sortables = [];
   const main = $("#main-content");
@@ -243,7 +260,11 @@ function renderPanels() {
   main.querySelectorAll(".item-list").forEach((list) => {
     sortables.push(new Sortable(list, {
       group: "trip-items",
-      draggable: ".item-card",
+      draggable: ".item-card:not(.anchor-card)",
+      onMove: (e) => { // 不可把任何卡片放到出發錨點之前
+        const anchor = e.to.querySelector(".anchor-card");
+        return !(anchor && e.related === anchor && !e.willInsertAfter);
+      },
       handle: ".drag-handle",
       animation: 150,
       forceFallback: true,      // 統一使用滑鼠/觸控模擬,手機拖曳更可靠
@@ -341,8 +362,8 @@ function renderItem(it) {
     ? `<a class="map-link" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(it.title)}" target="_blank" rel="noopener" title="在 Google Maps 開啟「${esc(it.title)}」">📍</a>`
     : "";
   return `
-  <div class="item-card" data-id="${it.id}" data-type="${esc(it.type)}">
-    <span class="drag-handle" title="拖曳調整順序">⠿</span>
+  <div class="item-card ${it.anchor ? "anchor-card" : ""}" data-id="${it.id}" data-type="${esc(it.type)}">
+    ${it.anchor ? `<span class="drag-handle anchor-pin" title="當天出發點,固定第一、不可移動">🚩</span>` : `<span class="drag-handle" title="拖曳調整順序">⠿</span>`}
     <div class="item-body">
       <div class="item-top">
         <span class="item-time">${esc(it.time)}</span>
@@ -402,6 +423,8 @@ function onDragEnd(evt) {
   for (const dayId of new Set([fromDay, toDay])) {
     const list = document.querySelector(`.item-list[data-day="${dayId}"]`);
     const order = [...list.querySelectorAll(".item-card")].map((c) => byId[c.dataset.id]).filter(Boolean);
+    const ai = order.findIndex((i) => i.anchor); // 保險:出發錨點永遠排第一
+    if (ai > 0) order.unshift(order.splice(ai, 1)[0]);
     const day = data.days.find((d) => d.id === dayId);
     if (order.map((i) => i.id).join() !== day.items.map((i) => i.id).join()) { day.items = order; changed = true; }
   }
@@ -616,7 +639,11 @@ function openItemModal(dayId, itemId) {
   $("#item-type").value = it ? it.type : "spot";
   $("#item-note").value = it ? it.note : "";
   $("#item-intro").value = it ? it.intro : "";
-  $("#item-delete").classList.toggle("hidden", !it);
+  // 出發錨點:只填出發時間、不可刪除
+  const isAnchor = !!(it && it.anchor);
+  $("#item-time-end").closest("label").classList.toggle("hidden", isAnchor);
+  if (isAnchor) $("#item-time-end").value = "";
+  $("#item-delete").classList.toggle("hidden", !it || isAnchor);
   $("#ai-status").classList.add("hidden");
   $("#ai-result").classList.add("hidden");
   $("#item-modal").classList.remove("hidden");

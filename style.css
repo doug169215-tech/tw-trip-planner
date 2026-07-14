@@ -179,6 +179,8 @@ main { max-width: 60rem; margin: 0 auto; padding: 1rem 1.2rem; }
 }
 .edit-btn:hover { opacity: 1; }
 .item-card[data-type="transport"] { background: rgba(255, 255, 255, .12); opacity: .92; }
+.anchor-card { border-color: rgba(255, 220, 150, .6); background: rgba(255, 210, 130, .16); }
+.anchor-pin { cursor: default !important; touch-action: auto !important; }
 .drag-handle {
   cursor: grab; color: rgba(255, 255, 255, .7); font-size: 1.1rem;
   padding: .1em .15em; user-select: none; touch-action: none;
