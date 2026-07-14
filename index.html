@@ -41,11 +41,8 @@
 <main id="main-content"></main>
 
 <footer class="app-footer">
-  <div id="footer-sync">
-    <button id="btn-pull" class="btn btn-ghost">⬇️ 取得最新行程</button>
-    <button id="btn-push" class="btn btn-primary">⬆️ 同步到 GitHub</button>
-  </div>
-  <p class="footer-note">拖曳卡片左側 ⠿ 可調整順序(可跨天移動)· 點卡片可編輯 · 所有修改都會記錄操作者</p>
+  <p id="sync-status" class="sync-status">☁️ 自動同步已啟用</p>
+  <p class="footer-note">拖曳卡片左側 ⠿ 可調整順序(可跨天移動)· 點卡片可編輯 · 修改會自動同步給全團並記錄操作者</p>
 </footer>
 
 <!-- 行程點編輯 -->
@@ -101,10 +98,8 @@
     <h3>或:直接填 API 金鑰</h3>
     <label>DeepSeek API Key<input id="set-deepseek" type="password" placeholder="sk-… (用於車程/停留時間估算)"></label>
     <label>Tavily API Key<input id="set-tavily" type="password" placeholder="tvly-… (用於景點介紹搜尋)"></label>
-    <h3>GitHub 同步(全團共用同一份行程)</h3>
-    <label>GitHub Token<input id="set-ghtoken" type="password" placeholder="填入後「同步到 GitHub」才能寫入"></label>
-    <p class="settings-hint">建議由團長建立一組僅限本 repo Contents 權限的 fine-grained token 分享給團員。金鑰只存在你自己的瀏覽器(localStorage),不會上傳。</p>
     <h3>資料</h3>
+    <p class="settings-hint">行程修改後會自動同步給全團(經由團用代理),無需任何設定。</p>
     <div class="settings-row">
       <button id="btn-export" class="btn btn-ghost">匯出 JSON</button>
       <button id="btn-import" class="btn btn-ghost">匯入 JSON</button>

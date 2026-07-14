@@ -253,7 +253,7 @@ main { max-width: 60rem; margin: 0 auto; padding: 1rem 1.2rem; }
   border-top: 1px solid var(--line);
   padding: .6rem 1.2rem; text-align: center;
 }
-#footer-sync { display: flex; gap: .6rem; justify-content: center; }
+.sync-status { margin: 0; font-size: .85rem; font-weight: 700; color: #fff; }
 .footer-note { margin: .35em 0 0; font-size: .72rem; color: var(--ink-soft); }
 
 /* ── Toast ── */

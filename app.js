@@ -2,20 +2,22 @@
 "use strict";
 
 // ─── 常數與狀態 ───────────────────────────────────────────────
-const GH = { owner: "doug169215-tech", repo: "tw-trip-planner", branch: "main", path: "data.json" };
 const LS = { data: "ttp.data", user: "ttp.user", settings: "ttp.settings" };
 const TYPE_EMOJI = { spot: "🏞️", meal: "🍜", transport: "🚗", stay: "🏠", prep: "🧳" };
 const TYPE_LABEL = { spot: "景點", meal: "餐食", transport: "車程", stay: "住宿/休息", prep: "整備" };
 
 let data = null;          // 行程資料(含 history)
 let currentUser = null;
-const DEFAULT_PROXY = "https://trip-ai-proxy.doug169215.workers.dev"; // 內建 AI 代理,團員免設定
-let settings = { deepseek: "", tavily: "", ghtoken: "", proxy: DEFAULT_PROXY };
+const DEFAULT_PROXY = "https://trip-ai-proxy.doug169215.workers.dev"; // 內建代理(AI+同步),團員免設定
+let settings = { deepseek: "", tavily: "", proxy: DEFAULT_PROXY };
 let dirty = false;        // 本機有未同步修改
 let activeDay = "overview";
 let editing = null;       // { dayId, itemId } 或 { dayId, itemId:null }(新增)
 let aiFill = null;        // AI 辨識結果暫存
 let sortables = [];
+let syncTimer = null;     // 自動上傳的 debounce 計時器
+let syncing = false;
+const proxyUrl = (p) => settings.proxy.replace(/\/+$/, "") + p;
 
 const $ = (sel) => document.querySelector(sel);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -31,6 +33,8 @@ async function init() {
   renderAll();
 
   if (!currentUser) showLogin();
+  if (dirty) scheduleSync();            // 上次沒同步完的本機修改,補傳
+  setInterval(pollRemote, 60_000);      // 每 60 秒自動抓團員的最新版本
 }
 
 async function loadData() {
@@ -39,9 +43,16 @@ async function loadData() {
 
   let remote = null;
   try {
-    const res = await fetch(`data.json?t=${Date.now()}`, { cache: "no-store" });
+    // 優先走代理(即時、無 CDN 快取);失敗再退回站內 data.json
+    const res = await fetch(proxyUrl("/data?t=" + Date.now()), { cache: "no-store" });
     if (res.ok) remote = await res.json();
   } catch {}
+  if (!remote) {
+    try {
+      const res = await fetch(`data.json?t=${Date.now()}`, { cache: "no-store" });
+      if (res.ok) remote = await res.json();
+    } catch {}
+  }
 
   if (local && remote) {
     if (new Date(local.updatedAt) > new Date(remote.updatedAt)) { data = local; dirty = true; }
@@ -59,13 +70,68 @@ function commit(text) {
   if (data.history.length > 300) data.history.length = 300;
   dirty = true;
   localStorage.setItem(LS.data, JSON.stringify(data));
-  updateSyncBadge();
+  scheduleSync();
+}
+
+// ─── 自動同步 ─────────────────────────────────────────────────
+function scheduleSync() {
+  setSyncStatus("✏️ 已存本機,即將自動上傳…", true);
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(autoSync, 2500);
+}
+
+async function autoSync() {
+  if (!settings.proxy) { setSyncStatus("⚠️ 未設定代理,修改僅存於本機", true); return; }
+  if (syncing) { clearTimeout(syncTimer); syncTimer = setTimeout(autoSync, 2000); return; }
+  syncing = true;
+  setSyncStatus("☁️ 自動上傳中…", true);
+  try {
+    const res = await fetch(proxyUrl("/sync"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `HTTP ${res.status}`);
+    }
+    dirty = false;
+    const t = new Date().toLocaleTimeString("zh-TW", { hour12: false, hour: "2-digit", minute: "2-digit" });
+    setSyncStatus(`✅ 已自動同步給全團(${t})`, false);
+  } catch (e) {
+    setSyncStatus(`⚠️ 同步失敗:${e.message},30 秒後自動重試`, true);
+    clearTimeout(syncTimer);
+    syncTimer = setTimeout(() => { if (dirty) autoSync(); }, 30_000);
+  }
+  syncing = false;
+}
+
+// 定時抓團員的最新版本(自己有未上傳修改時跳過,避免蓋掉)
+async function pollRemote() {
+  if (dirty || syncing || !settings.proxy) return;
+  try {
+    const res = await fetch(proxyUrl("/data?t=" + Date.now()), { cache: "no-store" });
+    if (!res.ok) return;
+    const remote = await res.json();
+    if (new Date(remote.updatedAt) > new Date(data.updatedAt)) {
+      data = remote;
+      localStorage.setItem(LS.data, JSON.stringify(data));
+      renderAll();
+      setSyncStatus("⬇️ 已載入團員的最新修改", false);
+    }
+  } catch {}
+}
+
+function setSyncStatus(text, isDirty) {
+  const s = $("#sync-status");
+  if (s) s.textContent = text;
+  const b = $("#sync-badge");
+  b.classList.toggle("dirty", !!isDirty);
+  b.title = text;
 }
 
 function updateSyncBadge() {
-  const b = $("#sync-badge");
-  b.classList.toggle("dirty", dirty);
-  b.title = dirty ? "本機有未同步的修改(按「同步到 GitHub」分享給團員)" : "已與線上版本一致";
+  setSyncStatus(dirty ? "✏️ 有本機修改待同步" : "☁️ 自動同步已啟用", dirty);
 }
 
 function toast(msg, ms = 2600) {
@@ -402,96 +468,6 @@ function suggestTime(prevItem, travelMin, stayMin) {
   return `${start}-${end}`;
 }
 
-// ─── GitHub 同步 ──────────────────────────────────────────────
-const b64encode = (str) => btoa(String.fromCharCode(...new TextEncoder().encode(str)));
-
-async function pushRemote() {
-  if (!settings.ghtoken) {
-    toast("請先到 ⚙️ 設定填入 GitHub Token 才能同步");
-    openSettings();
-    return;
-  }
-  const btn = $("#btn-push");
-  btn.disabled = true; btn.textContent = "⬆️ 同步中…";
-  try {
-    const api = `https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/${GH.path}`;
-    const headers = { "Authorization": `Bearer ${settings.ghtoken}`, "Accept": "application/vnd.github+json" };
-
-    // 取得遠端 sha 與版本
-    let sha = null;
-    const get = await fetch(`${api}?ref=${GH.branch}&t=${Date.now()}`, { headers });
-    if (get.ok) {
-      const gj = await get.json();
-      sha = gj.sha;
-      try {
-        const remote = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(gj.content.replace(/\n/g, "")), (c) => c.charCodeAt(0))));
-        if (new Date(remote.updatedAt) > new Date(data.updatedAt)) {
-          if (!confirm("線上版本比你的還新(可能有團員剛改過)。仍要用你的版本覆蓋嗎?\n建議先按「取得最新行程」。")) {
-            btn.disabled = false; btn.textContent = "⬆️ 同步到 GitHub";
-            return;
-          }
-        }
-      } catch {}
-    }
-
-    const lastAction = data.history[0] ? data.history[0].text : "更新行程";
-    const put = await fetch(api, {
-      method: "PUT",
-      headers,
-      body: JSON.stringify({
-        message: `${currentUser || "訪客"}: ${lastAction}`,
-        content: b64encode(JSON.stringify(data, null, 2)),
-        branch: GH.branch,
-        ...(sha ? { sha } : {}),
-      }),
-    });
-    if (!put.ok) {
-      const err = await put.json().catch(() => ({}));
-      throw new Error(`HTTP ${put.status} ${err.message || ""}`);
-    }
-    dirty = false;
-    localStorage.setItem(LS.data, JSON.stringify(data));
-    updateSyncBadge();
-    toast("✅ 已同步到 GitHub,團員按「取得最新行程」即可看到");
-  } catch (e) {
-    toast("❌ 同步失敗:" + e.message, 4200);
-  }
-  btn.disabled = false; btn.textContent = "⬆️ 同步到 GitHub";
-}
-
-async function pullRemote() {
-  const btn = $("#btn-pull");
-  btn.disabled = true; btn.textContent = "⬇️ 取得中…";
-  try {
-    // 優先走 raw(免 token);GitHub Pages 部署後也可直接抓同源 data.json
-    let remote = null;
-    try {
-      const res = await fetch(`https://raw.githubusercontent.com/${GH.owner}/${GH.repo}/${GH.branch}/${GH.path}?t=${Date.now()}`, { cache: "no-store" });
-      if (res.ok) remote = await res.json();
-    } catch {}
-    if (!remote) {
-      const res = await fetch(`data.json?t=${Date.now()}`, { cache: "no-store" });
-      if (res.ok) remote = await res.json();
-    }
-    if (!remote) throw new Error("無法取得線上版本");
-
-    if (dirty && new Date(data.updatedAt) > new Date(remote.updatedAt)) {
-      if (!confirm("你有尚未同步的本機修改,取得線上版本會覆蓋它們。確定要繼續嗎?")) {
-        btn.disabled = false; btn.textContent = "⬇️ 取得最新行程";
-        return;
-      }
-    }
-    data = remote;
-    dirty = false;
-    localStorage.setItem(LS.data, JSON.stringify(data));
-    renderAll();
-    toast("✅ 已更新為線上最新行程");
-  } catch (e) {
-    toast("❌ " + e.message, 4000);
-  }
-  btn.disabled = false; btn.textContent = "⬇️ 取得最新行程";
-}
-
 // ─── 使用者/設定/紀錄 ─────────────────────────────────────────
 function showLogin() {
   $("#login-overlay").classList.remove("hidden");
@@ -513,7 +489,6 @@ function openSettings() {
   $("#set-proxy").value = settings.proxy;
   $("#set-deepseek").value = settings.deepseek;
   $("#set-tavily").value = settings.tavily;
-  $("#set-ghtoken").value = settings.ghtoken;
   $("#settings-modal").classList.remove("hidden");
 }
 
@@ -521,7 +496,6 @@ function saveSettings() {
   settings.proxy = $("#set-proxy").value.trim();
   settings.deepseek = $("#set-deepseek").value.trim();
   settings.tavily = $("#set-tavily").value.trim();
-  settings.ghtoken = $("#set-ghtoken").value.trim();
   localStorage.setItem(LS.settings, JSON.stringify(settings));
   $("#settings-modal").classList.add("hidden");
   toast("✅ 設定已儲存(僅存於此瀏覽器)");
@@ -577,8 +551,6 @@ function bindGlobalEvents() {
   $("#btn-settings").onclick = openSettings;
   $("#settings-save").onclick = saveSettings;
   $("#btn-history").onclick = openHistory;
-  $("#btn-push").onclick = pushRemote;
-  $("#btn-pull").onclick = pullRemote;
 
   $("#item-save").onclick = saveItem;
   $("#item-cancel").onclick = () => $("#item-modal").classList.add("hidden");
