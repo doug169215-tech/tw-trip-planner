@@ -274,8 +274,17 @@ function renderOverview() {
       </table></div>
     </div>
     <div class="day-head">
-      <h2>✅ 行前確認清單</h2>
-      ${data.preTrip.map((p) => `
+      <h2>🤖 每日自動確認(每天 07:00 更新)</h2>
+      ${(() => {
+        const auto = data.preTrip.find((p) => p.id === "auto-daily");
+        return auto
+          ? `<p class="auto-daily">${esc(auto.text)}</p>`
+          : `<p class="auto-daily muted">今日摘要尚未產生;系統每天早上 7 點自動檢查沿途天氣、蘇花路況與熱氣球公告後顯示在這裡。</p>`;
+      })()}
+    </div>
+    <div class="day-head">
+      <h2>✅ 行前確認清單(人工勾選)</h2>
+      ${data.preTrip.filter((p) => p.id !== "auto-daily").map((p) => `
         <label class="checklist-item ${p.done ? "done" : ""}">
           <input type="checkbox" data-id="${p.id}" ${p.done ? "checked" : ""}>
           <span>${esc(p.text)}</span>
@@ -352,9 +361,11 @@ function renderRestaurants(day) {
   if (!day.restaurants || !day.restaurants.length) return "";
   // 每家餐廳附 Google Maps 搜尋連結:店名(冒號/括號前)+ 餐別中的地區關鍵字
   const li = (x, tag, cls, region) => {
+    const book = x.startsWith("訂|");           // 「訂|」開頭 → 需訂位標籤
+    if (book) x = x.slice(2);
     const name = x.split(":")[0].split("(")[0].trim();
     const url = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(name + " " + region);
-    return `<li><span class="resto-tag ${cls}">${tag}</span>${esc(x)}<a class="map-link" href="${url}" target="_blank" rel="noopener" title="在 Google Maps 搜尋「${esc(name)}」">📍</a></li>`;
+    return `<li><span class="resto-tag ${cls}">${tag}</span>${book ? `<span class="resto-tag tag-book">📞需訂位</span>` : ""}${esc(x)}<a class="map-link" href="${url}" target="_blank" rel="noopener" title="在 Google Maps 搜尋「${esc(name)}」">📍</a></li>`;
   };
   const body = day.restaurants.map((r) => {
     const region = (matchPlace(r.meal) || [""])[0];

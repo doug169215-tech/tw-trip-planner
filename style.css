@@ -196,6 +196,12 @@ main { max-width: 60rem; margin: 0 auto; padding: 1rem 1.2rem; }
   background: rgba(255, 255, 255, .88); color: var(--sea);
 }
 .item-card[data-type="meal"] .type-badge { color: var(--sun); }
+.auto-daily {
+  font-size: .88rem; line-height: 1.65; margin: .3em 0 0;
+  background: rgba(0, 45, 65, .28); border-radius: 10px; padding: .6em .8em;
+}
+.auto-daily.muted { color: var(--ink-soft); }
+.tag-book { background: #ffe1b8; color: #8a4b00; }
 .quick-add { display: flex; gap: .5rem; align-items: center; margin-top: .55rem; }
 .quick-add input {
   flex: 1; min-width: 0; font-family: inherit; font-size: .92rem;
