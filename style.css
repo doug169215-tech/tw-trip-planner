@@ -169,9 +169,15 @@ main { max-width: 60rem; margin: 0 auto; padding: 1rem 1.2rem; }
   display: flex; align-items: flex-start; gap: .6rem;
   background: var(--glass); border: 1px solid rgba(255, 255, 255, .38);
   border-radius: var(--radius);
-  padding: .65rem .85rem; box-shadow: var(--shadow); cursor: pointer;
+  padding: .65rem .85rem; box-shadow: var(--shadow);
   backdrop-filter: blur(10px);
 }
+.edit-btn {
+  flex: none; align-self: flex-start;
+  background: none; border: none; cursor: pointer;
+  font-size: .95rem; padding: .1em .2em; opacity: .65;
+}
+.edit-btn:hover { opacity: 1; }
 .item-card[data-type="transport"] { background: rgba(255, 255, 255, .12); opacity: .92; }
 .drag-handle {
   cursor: grab; color: rgba(255, 255, 255, .7); font-size: 1.1rem;

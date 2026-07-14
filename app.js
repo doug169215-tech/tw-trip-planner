@@ -223,11 +223,11 @@ function renderPanels() {
     };
   });
 
-  // 綁定行程卡片
-  main.querySelectorAll(".item-card").forEach((card) => {
-    card.onclick = (e) => {
-      if (e.target.closest(".drag-handle") || e.target.closest("details") || e.target.closest("a")) return;
-      openItemModal(card.closest(".item-list").dataset.day, card.dataset.id);
+  // 綁定編輯按鈕(卡片本身不可點,避免誤觸)
+  main.querySelectorAll(".edit-btn").forEach((btn) => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      openItemModal(btn.closest(".item-list").dataset.day, btn.dataset.id);
     };
   });
   main.querySelectorAll(".add-item-btn").forEach((btn) => {
@@ -344,6 +344,7 @@ function renderItem(it) {
       ${it.note ? `<p class="item-note">${esc(it.note)}</p>` : ""}
       ${it.intro ? `<details class="item-intro"><summary>景點介紹</summary>${esc(it.intro)}</details>` : ""}
     </div>
+    <button class="edit-btn" data-id="${it.id}" title="編輯這個行程點">✏️</button>
   </div>`;
 }
 
