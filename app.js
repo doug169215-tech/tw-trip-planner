@@ -132,6 +132,9 @@ function renderPanels() {
       group: "trip-items",
       handle: ".drag-handle",
       animation: 150,
+      forceFallback: true,      // 統一使用滑鼠/觸控模擬,手機拖曳更可靠
+      fallbackTolerance: 3,
+      delayOnTouchOnly: 150,    // 觸控長按 150ms 才開始拖,避免誤觸捲動
       onEnd: onDragEnd,
     }));
   });
