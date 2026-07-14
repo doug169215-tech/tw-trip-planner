@@ -62,6 +62,46 @@ async function loadData() {
     data = local || remote || structuredClone(window.DEFAULT_DATA);
     if (local && !remote) dirty = true;
   }
+  migrateTransports(data); // 舊版車程卡(如果還有)折疊為停靠點的 travel 資訊
+}
+
+// ─── 車程卡遷移:transport 卡折疊為下一個停靠點的 travel:{minutes,note} ──
+function timeRangeMinutes(t) {
+  const m = String(t || "").match(/(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})/);
+  if (!m) return null;
+  const a = +m[1] * 60 + +m[2], b = +m[3] * 60 + +m[4];
+  return b > a ? b - a : null;
+}
+
+function migrateTransports(d) {
+  let changed = false;
+  for (const day of d.days) {
+    if (!day.items.some((i) => i.type === "transport")) continue;
+    const out = [];
+    let pending = null; // 待折疊的車程資訊
+    for (const it of day.items) {
+      if (it.type === "transport") {
+        if (!out.length && !it.title.includes("→")) {
+          it.type = "prep"; out.push(it); changed = true; continue; // 當天開頭的「出發」卡 → 整備錨點
+        }
+        const mins = timeRangeMinutes(it.time);
+        const note = it.note || "";
+        pending = pending
+          ? { minutes: (pending.minutes || 0) + (mins || 0) || null, note: [pending.note, note].filter(Boolean).join(";") }
+          : { minutes: mins, note };
+        changed = true;
+        continue;
+      }
+      if (pending) {
+        if (!it.travel) it.travel = { minutes: pending.minutes || undefined, note: pending.note || undefined };
+        pending = null;
+      }
+      out.push(it);
+    }
+    if (pending) out.push({ id: uid(), time: "", title: "車程", type: "prep", note: pending.note, intro: "" });
+    day.items = out;
+  }
+  return changed;
 }
 
 // ─── 修改與紀錄 ───────────────────────────────────────────────
@@ -115,6 +155,7 @@ async function pollRemote() {
     const remote = await res.json();
     if (new Date(remote.updatedAt) > new Date(data.updatedAt)) {
       data = remote;
+      migrateTransports(data); // 團員舊版資料若含車程卡,在本機即時折疊(不回寫)
       localStorage.setItem(LS.data, JSON.stringify(data));
       renderAll();
       setSyncStatus("⬇️ 已載入團員的最新修改", false);
@@ -198,10 +239,11 @@ function renderPanels() {
 
   renderWeather();
 
-  // 拖曳排序(跨天共用群組)
+  // 拖曳排序(跨天共用群組;只有停靠點卡片可拖,車程列不可)
   main.querySelectorAll(".item-list").forEach((list) => {
     sortables.push(new Sortable(list, {
       group: "trip-items",
+      draggable: ".item-card",
       handle: ".drag-handle",
       animation: 150,
       forceFallback: true,      // 統一使用滑鼠/觸控模擬,手機拖曳更可靠
@@ -263,7 +305,7 @@ function renderDay(day) {
       <button class="btn btn-ai ai-retime" data-day="${day.id}" title="依目前卡片順序,由 AI 重新計算整天的時段">✨ AI 重排今日時間</button>
     </div>
     <div class="item-list" data-day="${day.id}">
-      ${day.items.map(renderItem).join("")}
+      ${day.items.map((it, i) => (i > 0 ? renderLeg(day, it) : "") + renderItem(it)).join("")}
     </div>
     <button class="add-item-btn" data-day="${day.id}">＋ 新增地點(可用 AI 智慧辨識)</button>
     <div class="day-extras">
@@ -272,6 +314,15 @@ function renderDay(day) {
       ${renderList("⏱️ 時間控制", day.timeControls)}
     </div>
   </section>`;
+}
+
+// 停靠點之間的車程列(自動生成,不可拖曳)
+function renderLeg(day, it) {
+  if (retimePending[day.id]) return `<div class="leg">🚗 ⏳ 車程重算中…</div>`;
+  if (!it.travel) return "";
+  const mins = it.travel.minutes ? `車程約 ${it.travel.minutes} 分` : "車程";
+  const note = it.travel.note ? ` · ${esc(it.travel.note)}` : "";
+  return `<div class="leg">🚗 ${mins}${note}</div>`;
 }
 
 function renderItem(it) {
@@ -322,49 +373,70 @@ function renderList(title, arr) {
 }
 
 // ─── 拖曳 ─────────────────────────────────────────────────────
+// 依 DOM 目前的卡片順序重建資料;車程列是衍生畫面,拖曳後自動重算
 function onDragEnd(evt) {
   const fromDay = evt.from.dataset.day;
   const toDay = evt.to.dataset.day;
   const itemId = evt.item.dataset.id;
-  if (fromDay === toDay && evt.oldIndex === evt.newIndex) return;
 
   const from = data.days.find((d) => d.id === fromDay);
   const to = data.days.find((d) => d.id === toDay);
-  const idx = from.items.findIndex((i) => i.id === itemId);
-  const [moved] = from.items.splice(idx, 1);
-  to.items.splice(evt.newIndex, 0, moved);
+  const moved = from.items.find((i) => i.id === itemId);
+  const oldIdx = from.items.indexOf(moved);
 
+  const byId = {};
+  data.days.forEach((d) => d.items.forEach((i) => { byId[i.id] = i; }));
+  let changed = false;
+  for (const dayId of new Set([fromDay, toDay])) {
+    const list = document.querySelector(`.item-list[data-day="${dayId}"]`);
+    const order = [...list.querySelectorAll(".item-card")].map((c) => byId[c.dataset.id]).filter(Boolean);
+    const day = data.days.find((d) => d.id === dayId);
+    if (order.map((i) => i.id).join() !== day.items.map((i) => i.id).join()) { day.items = order; changed = true; }
+  }
+  if (!changed) return;
+
+  const newIdx = to.items.indexOf(moved);
   const msg = fromDay === toDay
-    ? `調整「${moved.title}」在 ${to.name} 的順序(第 ${evt.oldIndex + 1} → 第 ${evt.newIndex + 1})`
+    ? `調整「${moved.title}」在 ${to.name} 的順序(第 ${oldIdx + 1} → 第 ${newIdx + 1})`
     : `將「${moved.title}」從 ${from.name} 移到 ${to.name}`;
   commit(msg);
+  scheduleRetime(fromDay);
+  if (toDay !== fromDay) scheduleRetime(toDay);
   renderPanels();
-  toast("已記錄:" + msg + ";可按「✨ AI 重排今日時間」自動修正各時段", 4200);
+  toast("已記錄:" + msg + ";車程與時間將自動重算", 4200);
 }
 
-// ─── AI 重排整天時間(拖曳後依新順序重新計算時段) ──────────────
+// 拖曳後 3 秒自動觸發 AI 重算(連續拖曳只算最後一次)
+const retimePending = {};
+const retimeTimers = {};
+function scheduleRetime(dayId) {
+  retimePending[dayId] = true;
+  clearTimeout(retimeTimers[dayId]);
+  retimeTimers[dayId] = setTimeout(() => aiRetime(dayId), 3000);
+}
+
+// ─── AI 重排整天時間與車程(拖曳後自動觸發,也可手動按按鈕) ─────
 async function aiRetime(dayId) {
   const day = data.days.find((d) => d.id === dayId);
   if (!day.items.length) { toast("這天還沒有行程點"); return; }
+  retimePending[dayId] = true;
   const btn = document.querySelector(`.ai-retime[data-day="${dayId}"]`);
-  const oldLabel = btn.textContent;
-  btn.disabled = true;
-  btn.textContent = "🧠 AI 計算中…";
+  if (btn) { btn.disabled = true; btn.textContent = "🧠 AI 重算時間與車程中…"; }
   try {
     const list = day.items.map((it, i) =>
-      `${i + 1}. id=${it.id} | ${TYPE_LABEL[it.type] || "行程"} | ${it.title} | 目前時間:${it.time || "(未定)"}`
+      `${i + 1}. id=${it.id} | ${TYPE_LABEL[it.type] || "行程"} | ${it.title} | 目前時間:${it.time || "(未定)"}${it.travel && it.travel.minutes ? ` | 原車程:${it.travel.minutes}分` : ""}`
     ).join("\n");
     const firstTime = (String(day.items[0].time).match(/\d{1,2}:\d{2}/) || ["08:00"])[0];
     const prompt = [
       `你是台灣自駕旅遊排程助手。8 人自駕環島,${day.name} 路線:${day.route}。`,
-      `以下是今天「依序」的行程點:`,
+      `以下是今天「依序」的停靠點:`,
       list,
-      `請依這個順序重新排定合理時間:`,
-      `- 第一個行程點從 ${firstTime} 開始,整天依序連貫、不可重疊`,
-      `- 車程項目的時間=出發-抵達,依台灣實際路況估車程;景點/餐食給合理停留時間`,
-      `- 午餐盡量落在 11:00-13:30、晚餐 18:00-20:30`,
+      `請依這個順序排定時間與車程:`,
+      `- 第一個停靠點從 ${firstTime} 開始,整天依序連貫、不可重疊`,
+      `- travel_minutes = 從前一站開車到該站的分鐘數,依台灣實際路況估算;第一項為 0;同一地點或步行可達給 0`,
+      `- 各站時間需已含前段車程;景點/餐食給合理停留時間;午餐盡量 11:00-13:30、晚餐 18:00-20:30`,
       `- 時間格式 "HH:MM-HH:MM";最後一項若是抵達/休息可只給起始 "HH:MM"`,
-      `僅回傳 JSON:{"items":[{"id":"...","time":"..."}]}`,
+      `僅回傳 JSON:{"items":[{"id":"...","time":"...","travel_minutes":數字}]}`,
     ].join("\n");
     const ep = aiEndpoint("deepseek");
     const res = await fetch(ep.url, {
@@ -381,24 +453,31 @@ async function aiRetime(dayId) {
     const out = JSON.parse((await res.json()).choices[0].message.content);
     const valid = /^\d{1,2}:\d{2}(-\d{1,2}:\d{2})?$/;
     let changed = 0;
-    for (const r of out.items || []) {
-      const it = day.items.find((i) => i.id === r.id);
-      if (!it || !valid.test(String(r.time || "").trim())) continue;
-      if (it.time !== r.time.trim()) { it.time = r.time.trim(); changed++; }
-    }
+    (out.items || []).forEach((r) => {
+      const idx = day.items.findIndex((i) => i.id === r.id);
+      if (idx === -1) return;
+      const it = day.items[idx];
+      if (valid.test(String(r.time || "").trim()) && it.time !== r.time.trim()) { it.time = r.time.trim(); changed++; }
+      const mins = Math.round(Number(r.travel_minutes));
+      if (idx === 0 || !Number.isFinite(mins) || mins <= 0) {
+        if (idx === 0 && it.travel) { delete it.travel; changed++; }
+      } else if (!it.travel || it.travel.minutes !== mins) {
+        it.travel = { ...(it.travel || {}), minutes: mins };
+        changed++;
+      }
+    });
+    retimePending[dayId] = false;
     if (changed) {
-      commit(`AI 重排 ${day.name} 時間(依目前順序更新 ${changed} 個時段)`);
-      renderPanels();
-      toast(`✅ AI 已重排 ${day.name} 的 ${changed} 個時段`);
+      commit(`AI 重排 ${day.name} 時間與車程(更新 ${changed} 處)`);
+      toast(`✅ AI 已重排 ${day.name} 的時間與車程`);
     } else {
-      toast("AI 認為目前時間已合理,未做修改");
-      btn.disabled = false;
-      btn.textContent = oldLabel;
+      toast("AI 認為目前時間與車程已合理,未做修改");
     }
+    renderPanels();
   } catch (e) {
-    toast("⚠️ AI 重排失敗:" + e.message);
-    btn.disabled = false;
-    btn.textContent = oldLabel;
+    retimePending[dayId] = false;
+    toast("⚠️ AI 重排失敗:" + e.message + ",可按「✨ AI 重排今日時間」重試");
+    renderPanels();
   }
 }
 
@@ -444,7 +523,10 @@ function saveItem() {
     Object.assign(it, vals);
     if (changes.length) commit(`修改 ${day.name}「${vals.title}」:${changes.join("、")}`);
   } else {
-    day.items.push({ id: uid(), ...vals });
+    const item = { id: uid(), ...vals };
+    const mins = aiFill && Math.round(Number(aiFill.travel_minutes));
+    if (day.items.length && Number.isFinite(mins) && mins > 0) item.travel = { minutes: mins }; // AI 估的車程掛到新停靠點
+    day.items.push(item);
     commit(`新增「${vals.title}」到 ${day.name}${aiFill ? "(AI 智慧辨識)" : ""}`);
   }
   $("#item-modal").classList.add("hidden");
