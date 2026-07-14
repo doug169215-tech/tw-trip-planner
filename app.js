@@ -294,12 +294,21 @@ function renderItem(it) {
 
 function renderRestaurants(day) {
   if (!day.restaurants || !day.restaurants.length) return "";
-  const body = day.restaurants.map((r) => `
+  // 每家餐廳附 Google Maps 搜尋連結:店名(冒號/括號前)+ 餐別中的地區關鍵字
+  const li = (x, tag, cls, region) => {
+    const name = x.split(":")[0].split("(")[0].trim();
+    const url = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(name + " " + region);
+    return `<li><span class="resto-tag ${cls}">${tag}</span>${esc(x)}<a class="map-link" href="${url}" target="_blank" rel="noopener" title="在 Google Maps 搜尋「${esc(name)}」">📍</a></li>`;
+  };
+  const body = day.restaurants.map((r) => {
+    const region = (matchPlace(r.meal) || [""])[0];
+    return `
     <p class="resto-meal">${esc(r.meal)}</p>
     <ul>
-      ${r.first.map((x) => `<li><span class="resto-tag tag-first">首選</span>${esc(x)}</li>`).join("")}
-      ${r.backup.map((x) => `<li><span class="resto-tag tag-backup">備案</span>${esc(x)}</li>`).join("")}
-    </ul>`).join("");
+      ${r.first.map((x) => li(x, "首選", "tag-first", region)).join("")}
+      ${r.backup.map((x) => li(x, "備案", "tag-backup", region)).join("")}
+    </ul>`;
+  }).join("");
   return `<div class="extra-block"><h3>🍽️ 餐廳推薦</h3>${body}</div>`;
 }
 
