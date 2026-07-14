@@ -1,10 +1,9 @@
 // 環島行程協作板 · AI 代理 Worker
-// 把 DeepSeek / Tavily 金鑰藏在伺服器端,團員只需要「團隊通行碼」。
+// 把 DeepSeek / Tavily 金鑰藏在伺服器端;來源鎖定行程板網頁,免通行碼。
 //
 // 需要設定的 Secrets(Cloudflare 儀表板 → Worker → Settings → Variables and Secrets):
 //   DEEPSEEK_KEY  = 你的 DeepSeek API Key
 //   TAVILY_KEY    = 你的 Tavily API Key
-//   TEAM_CODE     = 自訂團隊通行碼(例:huandao2026,分享給團員)
 
 const ALLOWED_ORIGINS = [
   "https://doug169215-tech.github.io", // 行程板網頁
@@ -20,16 +19,13 @@ export default {
     const cors = {
       "Access-Control-Allow-Origin": ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0],
       "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, X-Team-Code",
+      "Access-Control-Allow-Headers": "Content-Type",
       "Access-Control-Max-Age": "86400",
     };
 
     if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
     if (req.method !== "POST") return json({ error: "只接受 POST" }, 405, cors);
     if (!ALLOWED_ORIGINS.includes(origin)) return json({ error: "來源不在允許清單" }, 403, cors);
-    if ((req.headers.get("X-Team-Code") || "") !== env.TEAM_CODE) {
-      return json({ error: "團隊通行碼錯誤" }, 401, cors);
-    }
 
     // 粗略限流(每分鐘視窗)
     const now = Date.now();

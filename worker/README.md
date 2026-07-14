@@ -1,40 +1,34 @@
-# AI 代理 Worker 部署指南(免安裝任何工具)
+# AI 代理 Worker(trip-ai-proxy)
 
-讓團員不需要 API 金鑰也能使用 AI 智慧辨識:金鑰藏在 Cloudflare Worker,團員只需填「團隊通行碼」。
+讓團員不需要 API 金鑰就能使用 AI 智慧辨識:金鑰藏在 Cloudflare Worker,行程板網頁已內建代理網址,**開箱即用、免任何設定**。
 
 ```
 團員瀏覽器 → Cloudflare Worker(金鑰在伺服器端)→ DeepSeek / Tavily
 ```
 
-三道防護:CORS 鎖定只接受行程板網頁的請求、團隊通行碼驗證、每分鐘限流。
+防護:CORS 鎖定只接受行程板網頁(github.io)的請求 + 每分鐘限流 30 次。
 
-## 部署步驟(用瀏覽器儀表板,約 5 分鐘)
+## 目前部署
 
-1. 註冊/登入 [Cloudflare](https://dash.cloudflare.com)(免費方案即可)
-2. 左側選 **Workers & Pages** → **Create** → **Create Worker** → 取名(例:`trip-ai-proxy`)→ **Deploy**
-3. 點 **Edit code**,把 [`worker.js`](./worker.js) 的內容全部貼上覆蓋 → **Deploy**
-4. 回到 Worker 頁面 → **Settings** → **Variables and Secrets** → 新增 3 個 **Secret**:
-   | 名稱 | 值 |
-   |---|---|
-   | `DEEPSEEK_KEY` | 你的 DeepSeek API Key(sk-…) |
-   | `TAVILY_KEY` | 你的 Tavily API Key(tvly-…) |
-   | `TEAM_CODE` | 自訂通行碼,例:`huandao2026` |
-5. 記下 Worker 網址,例:`https://trip-ai-proxy.<你的帳號>.workers.dev`
+- Worker 名稱:`trip-ai-proxy`
+- 網址:`https://trip-ai-proxy.doug169215.workers.dev`
+- 路徑:`POST /deepseek`(轉發 DeepSeek chat/completions)、`POST /tavily`(轉發 Tavily search)
+- Secrets:`DEEPSEEK_KEY`、`TAVILY_KEY`(儀表板 → Worker → Settings → Variables and Secrets)
 
-## 團員如何使用
+## 更新部署(程式碼有改時)
 
-到行程板網頁 → **⚙️ 設定** → 「AI 代理(推薦)」區塊填:
+```bash
+cd worker
+npx wrangler deploy
+```
 
-- **Worker 代理網址**:`https://trip-ai-proxy.<你的帳號>.workers.dev`
-- **團隊通行碼**:你訂的 `TEAM_CODE`
-
-填了代理就**不需要**填 DeepSeek / Tavily 金鑰。
+(首次需 `npx wrangler login` 以瀏覽器授權)
 
 ## 安全性說明
 
 - 金鑰只存在 Cloudflare Secret,永遠不會出現在網頁或團員瀏覽器
-- 通行碼若外流,別人也只能透過你的 Worker 用(且有限流),換一個 `TEAM_CODE` 即可,金鑰不用換
-- 免費額度每天 100,000 次請求,這個用途綽綽有餘
-- 限流是單節點盡力而為;若要嚴格限流可加 Cloudflare Rate Limiting 規則
+- 瀏覽器端受 CORS 限制,只有行程板網頁能呼叫
+- 注意:非瀏覽器的程式(如 curl)可偽造來源標頭,因此代理網址本身請只分享給團員;DeepSeek 為預付儲值制,最壞情況損失以餘額為上限,建議小額儲值
+- 免費額度每天 100,000 次請求
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)

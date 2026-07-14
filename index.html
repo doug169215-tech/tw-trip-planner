@@ -95,10 +95,9 @@
 <div id="settings-modal" class="overlay hidden">
   <div class="modal">
     <h2>⚙️ 設定</h2>
-    <h3>AI 代理(推薦 · 團員免金鑰)</h3>
+    <h3>AI 代理(已內建 · 免設定)</h3>
     <label>Worker 代理網址<input id="set-proxy" type="text" placeholder="https://trip-ai-proxy.xxx.workers.dev"></label>
-    <label>團隊通行碼<input id="set-teamcode" type="password" placeholder="向團長索取"></label>
-    <p class="settings-hint">填了代理就不需要下方的 API 金鑰;金鑰由團長保管在 Cloudflare Worker(見 repo 的 worker/README.md)。</p>
+    <p class="settings-hint">預設已填好團用代理,AI 智慧辨識開箱即用;金鑰由團長保管在 Cloudflare Worker。清空此欄則改用下方自填金鑰。</p>
     <h3>或:直接填 API 金鑰</h3>
     <label>DeepSeek API Key<input id="set-deepseek" type="password" placeholder="sk-… (用於車程/停留時間估算)"></label>
     <label>Tavily API Key<input id="set-tavily" type="password" placeholder="tvly-… (用於景點介紹搜尋)"></label>

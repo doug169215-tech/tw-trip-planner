@@ -9,7 +9,8 @@ const TYPE_LABEL = { spot: "景點", meal: "餐食", transport: "車程", stay: 
 
 let data = null;          // 行程資料(含 history)
 let currentUser = null;
-let settings = { deepseek: "", tavily: "", ghtoken: "", proxy: "", teamcode: "" };
+const DEFAULT_PROXY = "https://trip-ai-proxy.doug169215.workers.dev"; // 內建 AI 代理,團員免設定
+let settings = { deepseek: "", tavily: "", ghtoken: "", proxy: DEFAULT_PROXY };
 let dirty = false;        // 本機有未同步修改
 let activeDay = "overview";
 let editing = null;       // { dayId, itemId } 或 { dayId, itemId:null }(新增)
@@ -303,10 +304,10 @@ function deleteItem() {
 }
 
 // ─── AI 智慧辨識(DeepSeek 車程估算 + Tavily 景點介紹) ────────
-// 代理模式:填了 Worker 網址+通行碼,金鑰留在伺服器端
-const useProxy = () => !!(settings.proxy && settings.teamcode);
+// 代理模式(預設):走 Worker 代理,金鑰留在伺服器端;清空代理網址則改用自填金鑰
+const useProxy = () => !!settings.proxy;
 const aiEndpoint = (svc) => useProxy()
-  ? { url: settings.proxy.replace(/\/+$/, "") + "/" + svc, headers: { "Content-Type": "application/json", "X-Team-Code": settings.teamcode } }
+  ? { url: settings.proxy.replace(/\/+$/, "") + "/" + svc, headers: { "Content-Type": "application/json" } }
   : svc === "deepseek"
     ? { url: "https://api.deepseek.com/chat/completions", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${settings.deepseek}` } }
     : { url: "https://api.tavily.com/search", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${settings.tavily}` } };
@@ -315,7 +316,7 @@ async function runAI() {
   const title = $("#item-title").value.trim();
   if (!title) { toast("請先填寫地點名稱"); return; }
   if (!useProxy() && !settings.deepseek && !settings.tavily) {
-    toast("請先到 ⚙️ 設定填入 Worker 代理(向團長索取)或 API Key");
+    toast("請到 ⚙️ 設定填入 Worker 代理網址或 API Key");
     return;
   }
   const status = $("#ai-status");
@@ -510,7 +511,6 @@ function doLogin() {
 
 function openSettings() {
   $("#set-proxy").value = settings.proxy;
-  $("#set-teamcode").value = settings.teamcode;
   $("#set-deepseek").value = settings.deepseek;
   $("#set-tavily").value = settings.tavily;
   $("#set-ghtoken").value = settings.ghtoken;
@@ -519,7 +519,6 @@ function openSettings() {
 
 function saveSettings() {
   settings.proxy = $("#set-proxy").value.trim();
-  settings.teamcode = $("#set-teamcode").value.trim();
   settings.deepseek = $("#set-deepseek").value.trim();
   settings.tavily = $("#set-tavily").value.trim();
   settings.ghtoken = $("#set-ghtoken").value.trim();
