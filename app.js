@@ -192,6 +192,9 @@ function renderPanels() {
   main.querySelectorAll(".add-item-btn").forEach((btn) => {
     btn.onclick = () => openItemModal(btn.dataset.day, null);
   });
+  main.querySelectorAll(".ai-retime").forEach((btn) => {
+    btn.onclick = () => aiRetime(btn.dataset.day);
+  });
 
   renderWeather();
 
@@ -257,6 +260,7 @@ function renderDay(day) {
       ${day.lodging ? `<p class="day-lodging">🏠 住宿:${lodgingHtml(day)}</p>` : ""}
       ${(day.trafficTips || []).map((t) => `<div class="traffic-tip">🚦 ${esc(t)}</div>`).join("")}
       <div class="weather-row" data-wday="${day.id}"></div>
+      <button class="btn btn-ai ai-retime" data-day="${day.id}" title="依目前卡片順序,由 AI 重新計算整天的時段">✨ AI 重排今日時間</button>
     </div>
     <div class="item-list" data-day="${day.id}">
       ${day.items.map(renderItem).join("")}
@@ -335,7 +339,67 @@ function onDragEnd(evt) {
     : `將「${moved.title}」從 ${from.name} 移到 ${to.name}`;
   commit(msg);
   renderPanels();
-  toast("已記錄:" + msg);
+  toast("已記錄:" + msg + ";可按「✨ AI 重排今日時間」自動修正各時段", 4200);
+}
+
+// ─── AI 重排整天時間(拖曳後依新順序重新計算時段) ──────────────
+async function aiRetime(dayId) {
+  const day = data.days.find((d) => d.id === dayId);
+  if (!day.items.length) { toast("這天還沒有行程點"); return; }
+  const btn = document.querySelector(`.ai-retime[data-day="${dayId}"]`);
+  const oldLabel = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "🧠 AI 計算中…";
+  try {
+    const list = day.items.map((it, i) =>
+      `${i + 1}. id=${it.id} | ${TYPE_LABEL[it.type] || "行程"} | ${it.title} | 目前時間:${it.time || "(未定)"}`
+    ).join("\n");
+    const firstTime = (String(day.items[0].time).match(/\d{1,2}:\d{2}/) || ["08:00"])[0];
+    const prompt = [
+      `你是台灣自駕旅遊排程助手。8 人自駕環島,${day.name} 路線:${day.route}。`,
+      `以下是今天「依序」的行程點:`,
+      list,
+      `請依這個順序重新排定合理時間:`,
+      `- 第一個行程點從 ${firstTime} 開始,整天依序連貫、不可重疊`,
+      `- 車程項目的時間=出發-抵達,依台灣實際路況估車程;景點/餐食給合理停留時間`,
+      `- 午餐盡量落在 11:00-13:30、晚餐 18:00-20:30`,
+      `- 時間格式 "HH:MM-HH:MM";最後一項若是抵達/休息可只給起始 "HH:MM"`,
+      `僅回傳 JSON:{"items":[{"id":"...","time":"..."}]}`,
+    ].join("\n");
+    const ep = aiEndpoint("deepseek");
+    const res = await fetch(ep.url, {
+      method: "POST",
+      headers: ep.headers,
+      body: JSON.stringify({
+        model: "deepseek-chat",
+        messages: [{ role: "user", content: prompt }],
+        response_format: { type: "json_object" },
+        temperature: 0.2,
+      }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const out = JSON.parse((await res.json()).choices[0].message.content);
+    const valid = /^\d{1,2}:\d{2}(-\d{1,2}:\d{2})?$/;
+    let changed = 0;
+    for (const r of out.items || []) {
+      const it = day.items.find((i) => i.id === r.id);
+      if (!it || !valid.test(String(r.time || "").trim())) continue;
+      if (it.time !== r.time.trim()) { it.time = r.time.trim(); changed++; }
+    }
+    if (changed) {
+      commit(`AI 重排 ${day.name} 時間(依目前順序更新 ${changed} 個時段)`);
+      renderPanels();
+      toast(`✅ AI 已重排 ${day.name} 的 ${changed} 個時段`);
+    } else {
+      toast("AI 認為目前時間已合理,未做修改");
+      btn.disabled = false;
+      btn.textContent = oldLabel;
+    }
+  } catch (e) {
+    toast("⚠️ AI 重排失敗:" + e.message);
+    btn.disabled = false;
+    btn.textContent = oldLabel;
+  }
 }
 
 // ─── 行程點編輯 ───────────────────────────────────────────────
