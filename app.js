@@ -196,8 +196,8 @@ function renderItem(it) {
     <div class="item-body">
       <div class="item-top">
         <span class="item-time">${esc(it.time)}</span>
-        <span class="item-emoji">${TYPE_EMOJI[it.type] || "📍"}</span>
         <span class="item-title">${esc(it.title)}</span>
+        <span class="type-badge">${TYPE_LABEL[it.type] || "行程"}</span>
       </div>
       ${it.note ? `<p class="item-note">${esc(it.note)}</p>` : ""}
       ${it.intro ? `<details class="item-intro"><summary>景點介紹</summary>${esc(it.intro)}</details>` : ""}
