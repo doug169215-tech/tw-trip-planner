@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>四天三夜環島|行程協作板</title>
+<meta name="description" content="8 人自駕環島行程協作板:拖曳修改行程、保留修改紀錄、AI 智慧新增地點">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+</head>
+<body>
+
+<!-- 使用者名稱登入層 -->
+<div id="login-overlay" class="overlay hidden">
+  <div class="login-card">
+    <div class="login-emoji">🏝️</div>
+    <h1>四天三夜環島</h1>
+    <p class="login-sub">行程協作板 · 輸入你的名字開始</p>
+    <input id="login-name" type="text" maxlength="12" placeholder="你的名字(例:小明)" autocomplete="off">
+    <button id="login-btn" class="btn btn-primary btn-lg">進入行程板</button>
+    <p class="login-hint">名字只用來標記「誰改了行程」,不需要密碼。</p>
+  </div>
+</div>
+
+<header class="app-header">
+  <div class="header-main">
+    <h1 id="trip-title">四天三夜環島</h1>
+    <p id="trip-subtitle" class="trip-subtitle"></p>
+  </div>
+  <div class="header-actions">
+    <span id="sync-badge" class="sync-badge" title="同步狀態">●</span>
+    <button id="btn-history" class="btn btn-ghost" title="修改紀錄">📜 紀錄</button>
+    <button id="btn-settings" class="btn btn-ghost" title="設定">⚙️ 設定</button>
+    <button id="btn-user" class="btn btn-user" title="切換使用者">👤 <span id="user-name"></span></button>
+  </div>
+</header>
+
+<nav id="day-tabs" class="day-tabs"></nav>
+
+<main id="main-content"></main>
+
+<footer class="app-footer">
+  <div id="footer-sync">
+    <button id="btn-pull" class="btn btn-ghost">⬇️ 取得最新行程</button>
+    <button id="btn-push" class="btn btn-primary">⬆️ 同步到 GitHub</button>
+  </div>
+  <p class="footer-note">拖曳卡片左側 ⠿ 可調整順序(可跨天移動)· 點卡片可編輯 · 所有修改都會記錄操作者</p>
+</footer>
+
+<!-- 行程點編輯 -->
+<div id="item-modal" class="overlay hidden">
+  <div class="modal">
+    <h2 id="item-modal-title">編輯行程點</h2>
+    <label>時間<input id="item-time" type="text" placeholder="例:10:10-11:00"></label>
+    <label>名稱<input id="item-title" type="text" placeholder="地點或活動名稱"></label>
+    <label>類型
+      <select id="item-type">
+        <option value="spot">🏞️ 景點</option>
+        <option value="meal">🍜 餐食</option>
+        <option value="transport">🚗 車程</option>
+        <option value="stay">🏠 住宿/休息</option>
+        <option value="prep">🧳 整備</option>
+      </select>
+    </label>
+    <label>備註<textarea id="item-note" rows="2" placeholder="停車、注意事項…"></textarea></label>
+    <div id="ai-zone" class="ai-zone">
+      <button id="btn-ai" class="btn btn-ai">✨ AI 智慧辨識(車程估算+景點介紹)</button>
+      <div id="ai-status" class="ai-status hidden"></div>
+      <div id="ai-result" class="ai-result hidden"></div>
+    </div>
+    <label>景點介紹<textarea id="item-intro" rows="4" placeholder="可手動填寫,或用上方 AI 智慧辨識自動產生"></textarea></label>
+    <div class="modal-actions">
+      <button id="item-delete" class="btn btn-danger">刪除</button>
+      <span class="spacer"></span>
+      <button id="item-cancel" class="btn btn-ghost">取消</button>
+      <button id="item-save" class="btn btn-primary">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 修改紀錄 -->
+<div id="history-modal" class="overlay hidden">
+  <div class="modal">
+    <h2>📜 修改紀錄</h2>
+    <div id="history-list" class="history-list"></div>
+    <div class="modal-actions">
+      <span class="spacer"></span>
+      <button class="btn btn-ghost modal-close">關閉</button>
+    </div>
+  </div>
+</div>
+
+<!-- 設定 -->
+<div id="settings-modal" class="overlay hidden">
+  <div class="modal">
+    <h2>⚙️ 設定</h2>
+    <h3>AI 智慧辨識</h3>
+    <label>DeepSeek API Key<input id="set-deepseek" type="password" placeholder="sk-… (用於車程/停留時間估算)"></label>
+    <label>Tavily API Key<input id="set-tavily" type="password" placeholder="tvly-… (用於景點介紹搜尋)"></label>
+    <h3>GitHub 同步(全團共用同一份行程)</h3>
+    <label>GitHub Token<input id="set-ghtoken" type="password" placeholder="填入後「同步到 GitHub」才能寫入"></label>
+    <p class="settings-hint">建議由團長建立一組僅限本 repo Contents 權限的 fine-grained token 分享給團員。金鑰只存在你自己的瀏覽器(localStorage),不會上傳。</p>
+    <h3>資料</h3>
+    <div class="settings-row">
+      <button id="btn-export" class="btn btn-ghost">匯出 JSON</button>
+      <button id="btn-import" class="btn btn-ghost">匯入 JSON</button>
+      <button id="btn-reset" class="btn btn-danger">重設為預設行程</button>
+      <input id="import-file" type="file" accept=".json" class="hidden">
+    </div>
+    <div class="modal-actions">
+      <span class="spacer"></span>
+      <button class="btn btn-ghost modal-close">關閉</button>
+      <button id="settings-save" class="btn btn-primary">儲存設定</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
