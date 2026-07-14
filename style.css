@@ -190,6 +190,12 @@ main { max-width: 60rem; margin: 0 auto; padding: 1rem 1.2rem; }
   background: rgba(255, 255, 255, .88); color: var(--sea);
 }
 .item-card[data-type="meal"] .type-badge { color: var(--sun); }
+.item-wx {
+  font-size: .78rem; font-weight: 700; white-space: nowrap;
+  color: #eaf7fb; font-variant-numeric: tabular-nums;
+  margin-left: auto; cursor: help;
+}
+.item-wx:empty { display: none; }
 .item-note { font-size: .82rem; color: var(--ink-soft); margin: .1em 0 0; }
 .item-intro {
   font-size: .82rem; margin: .35em 0 0; padding: .45em .7em;

@@ -285,6 +285,7 @@ function renderItem(it) {
         <span class="item-time">${esc(it.time)}</span>
         <span class="item-title">${esc(it.title)}</span>
         <span class="type-badge">${TYPE_LABEL[it.type] || "行程"}</span>
+        <span class="item-wx" data-wxitem="${it.id}"></span>
       </div>
       ${it.note ? `<p class="item-note">${esc(it.note)}</p>` : ""}
       ${it.intro ? `<details class="item-intro"><summary>景點介紹</summary>${esc(it.intro)}</details>` : ""}
@@ -495,7 +496,46 @@ const WEATHER_POINTS = {
   day3: [["台東", 22.75, 121.15], ["成功", 23.10, 121.37], ["花蓮", 23.98, 121.60]],
   day4: [["花蓮", 23.98, 121.60], ["蘇澳", 24.59, 121.85], ["新竹", 24.81, 120.97]],
 };
-let weather = { fetchedAt: 0, points: {} };
+
+// 地名 → 座標(用於行程卡片的逐時天氣;從卡片標題自動辨識)
+const PLACES = [
+  ["新竹", 24.81, 120.97], ["竹北", 24.84, 121.00], ["台中", 24.16, 120.65],
+  ["台南", 22.99, 120.20], ["國華街", 22.99, 120.20], ["西市場", 22.99, 120.20],
+  ["枋山", 22.26, 120.65], ["枋野", 22.26, 120.65], ["愛琴海岸", 22.31, 120.63],
+  ["恆春", 22.00, 120.74], ["墾丁", 21.94, 120.79],
+  ["台東", 22.75, 121.15], ["鐵花", 22.75, 121.15], ["波浪屋", 22.75, 121.15],
+  ["琵琶湖", 22.77, 121.16], ["森林公園", 22.77, 121.16],
+  ["鹿野", 22.92, 121.12], ["熱氣球", 22.92, 121.12],
+  ["小野柳", 22.79, 121.20], ["加路蘭", 22.81, 121.20], ["都蘭", 22.88, 121.23],
+  ["成功", 23.10, 121.37], ["三仙台", 23.12, 121.41],
+  ["金剛大道", 23.32, 121.46], ["長濱", 23.32, 121.46],
+  ["石梯坪", 23.48, 121.51],
+  ["花蓮", 23.98, 121.60], ["東大門", 23.98, 121.61],
+  ["七星潭", 24.03, 121.63], ["崇德", 24.17, 121.66], ["清水斷崖", 24.17, 121.66],
+  ["台泥", 24.30, 121.76], ["DAKA", 24.30, 121.76], ["和平", 24.30, 121.76],
+  ["南方澳", 24.59, 121.86], ["南澳", 24.46, 121.80], ["蘇澳", 24.59, 121.85],
+  ["礁溪", 24.83, 121.77],
+];
+
+// 從文字辨識地點:取「最後出現」的地名(車程「A → B」因此會取目的地 B)
+function matchPlace(text) {
+  let best = null, bestEnd = -1, bestLen = 0;
+  for (const p of PLACES) {
+    const idx = text.lastIndexOf(p[0]);
+    if (idx === -1) continue;
+    const end = idx + p[0].length;
+    if (end > bestEnd || (end === bestEnd && p[0].length > bestLen)) { best = p; bestEnd = end; bestLen = p[0].length; }
+  }
+  return best;
+}
+
+// 解析行程點的起始時間(小時),支援 "HH:MM" 與 "HH:MM-HH:MM"
+function itemStartHour(timeStr) {
+  const m = String(timeStr || "").match(/(\d{1,2}):(\d{2})/);
+  return m ? parseInt(m[1], 10) : null;
+}
+
+let weather = { fetchedAt: 0, points: {}, hourly: {} };
 
 // WMO 天氣代碼 → 圖示與說明
 function wmoIcon(code) {
@@ -524,18 +564,24 @@ async function fetchWeather(force) {
   if (!force && Date.now() - weather.fetchedAt < 30 * 60_000 && Object.keys(weather.points).length) return;
   try {
     const uniq = new Map();
-    Object.values(WEATHER_POINTS).flat().forEach((p) => uniq.set(p[1] + "," + p[2], p));
+    Object.values(WEATHER_POINTS).flat().concat(PLACES).forEach((p) => uniq.set(p[1] + "," + p[2], p));
     const pts = [...uniq.values()];
     const url = "https://api.open-meteo.com/v1/forecast"
       + `?latitude=${pts.map((p) => p[1]).join(",")}&longitude=${pts.map((p) => p[2]).join(",")}`
       + "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max"
+      + "&hourly=weather_code,temperature_2m,precipitation_probability"
       + "&timezone=Asia%2FTaipei&forecast_days=16";
     const res = await fetch(url);
     if (!res.ok) return;
     let arr = await res.json();
     if (!Array.isArray(arr)) arr = [arr];
     weather.points = {};
-    arr.forEach((r, i) => { weather.points[pts[i][1] + "," + pts[i][2]] = r.daily; });
+    weather.hourly = {};
+    arr.forEach((r, i) => {
+      const key = pts[i][1] + "," + pts[i][2];
+      weather.points[key] = r.daily;
+      weather.hourly[key] = r.hourly;
+    });
     weather.fetchedAt = Date.now();
   } catch {}
 }
@@ -564,6 +610,32 @@ function renderWeather() {
       row.innerHTML = `<span class="wx-date">🗓️ ${dateLabel} 距今較遠,進入 16 天預報範圍後自動顯示${data.startDate ? "" : "(請先在總覽設定出發日)"}</span>`;
     } else {
       row.innerHTML = `<span class="wx-date">天氣載入中…</span>`;
+    }
+  });
+
+  renderItemWeather(start);
+}
+
+// 各行程卡片:依「地點 + 該時段」顯示逐時天氣
+function renderItemWeather(start) {
+  if (!Object.keys(weather.hourly).length) return;
+  data.days.forEach((day, idx) => {
+    const date = new Date(start); date.setDate(date.getDate() + idx);
+    const iso = localISO(date);
+    let lastPlace = (WEATHER_POINTS[day.id] || [])[0] || null; // 認不出地名時沿用前一站
+    for (const it of day.items) {
+      const el = document.querySelector(`.item-wx[data-wxitem="${it.id}"]`);
+      const place = matchPlace(it.title + " " + (it.note || "")) || lastPlace;
+      lastPlace = place;
+      if (!el || !place) continue;
+      const hourly = weather.hourly[place[1] + "," + place[2]];
+      const hour = itemStartHour(it.time);
+      if (!hourly || hour === null) continue;
+      const hi = hourly.time.indexOf(`${iso}T${String(hour).padStart(2, "0")}:00`);
+      if (hi === -1) continue;
+      const [icon, label] = wmoIcon(hourly.weather_code[hi]);
+      el.innerHTML = `${icon} ${Math.round(hourly.temperature_2m[hi])}° ☔${hourly.precipitation_probability[hi]}%`;
+      el.title = `${place[0]} ${String(hour).padStart(2, "0")}:00 ${label},氣溫 ${Math.round(hourly.temperature_2m[hi])}°C,降雨機率 ${hourly.precipitation_probability[hi]}%`;
     }
   });
 }
