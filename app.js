@@ -35,6 +35,9 @@ async function init() {
   if (!currentUser) showLogin();
   if (dirty) scheduleSync();            // 上次沒同步完的本機修改,補傳
   setInterval(pollRemote, 60_000);      // 每 60 秒自動抓團員的最新版本
+
+  fetchWeather().then(renderWeather);   // 天氣預報(Open-Meteo,免金鑰)
+  setInterval(() => fetchWeather(true).then(renderWeather), 30 * 60_000); // 每 30 分鐘更新
 }
 
 async function loadData() {
@@ -193,6 +196,16 @@ function renderPanels() {
     btn.onclick = () => openItemModal(btn.dataset.day, null);
   });
 
+  // 出發日設定
+  const sd = $("#start-date");
+  if (sd) sd.onchange = () => {
+    data.startDate = sd.value || undefined;
+    commit(sd.value ? `設定出發日為 ${sd.value}` : "清除出發日");
+    renderWeather();
+  };
+
+  renderWeather();
+
   // 拖曳排序(跨天共用群組)
   main.querySelectorAll(".item-list").forEach((list) => {
     sortables.push(new Sortable(list, {
@@ -214,6 +227,12 @@ function renderOverview() {
   ).join("");
   return `
   <section class="day-panel ${act}" data-panel="overview">
+    <div class="day-head">
+      <label class="startdate-row">🗓️ 出發日(Day 1):
+        <input type="date" id="start-date" value="${esc(data.startDate || "")}">
+        <small>設定後各天自動顯示對應日期的天氣預報(全團共用)</small>
+      </label>
+    </div>
     <div class="day-head">
       <h2>行程原則</h2>
       <ul class="overview-principles">${data.principles.map((p) => `<li>${esc(p)}</li>`).join("")}</ul>
@@ -243,6 +262,7 @@ function renderDay(day) {
       <p class="day-route">${esc(day.route)}</p>
       ${day.lodging ? `<p class="day-lodging">🏠 住宿:${esc(day.lodging)}</p>` : ""}
       ${(day.trafficTips || []).map((t) => `<div class="traffic-tip">🚦 ${esc(t)}</div>`).join("")}
+      <div class="weather-row" data-wday="${day.id}"></div>
     </div>
     <div class="item-list" data-day="${day.id}">
       ${day.items.map(renderItem).join("")}
@@ -466,6 +486,86 @@ function suggestTime(prevItem, travelMin, stayMin) {
   const start = fmt(t);
   const end = fmt(t + (Number(stayMin) || 30));
   return `${start}-${end}`;
+}
+
+// ─── 天氣預報(Open-Meteo · 免金鑰)───────────────────────────
+const WEATHER_POINTS = {
+  day1: [["新竹", 24.81, 120.97], ["台南", 22.99, 120.20], ["恆春", 22.00, 120.74]],
+  day2: [["恆春", 22.00, 120.74], ["台東", 22.75, 121.15], ["鹿野", 22.91, 121.14]],
+  day3: [["台東", 22.75, 121.15], ["成功", 23.10, 121.37], ["花蓮", 23.98, 121.60]],
+  day4: [["花蓮", 23.98, 121.60], ["蘇澳", 24.59, 121.85], ["新竹", 24.81, 120.97]],
+};
+let weather = { fetchedAt: 0, points: {} };
+
+// WMO 天氣代碼 → 圖示與說明
+function wmoIcon(code) {
+  if (code === 0) return ["☀️", "晴"];
+  if (code <= 1) return ["🌤️", "晴時多雲"];
+  if (code <= 2) return ["⛅", "多雲"];
+  if (code <= 3) return ["☁️", "陰"];
+  if (code <= 48) return ["🌫️", "霧"];
+  if (code <= 57) return ["🌦️", "毛毛雨"];
+  if (code <= 67) return ["🌧️", "雨"];
+  if (code <= 77) return ["🌨️", "雪"];
+  if (code <= 82) return ["🌧️", "陣雨"];
+  if (code <= 86) return ["🌨️", "陣雪"];
+  return ["⛈️", "雷雨"];
+}
+
+function tripStartDate() {
+  if (data.startDate) return new Date(data.startDate + "T00:00:00");
+  const d = new Date(); d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() + (((5 - d.getDay() + 7) % 7) || 7)); // 預設:下一個週五
+  return d;
+}
+const localISO = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+async function fetchWeather(force) {
+  if (!force && Date.now() - weather.fetchedAt < 30 * 60_000 && Object.keys(weather.points).length) return;
+  try {
+    const uniq = new Map();
+    Object.values(WEATHER_POINTS).flat().forEach((p) => uniq.set(p[1] + "," + p[2], p));
+    const pts = [...uniq.values()];
+    const url = "https://api.open-meteo.com/v1/forecast"
+      + `?latitude=${pts.map((p) => p[1]).join(",")}&longitude=${pts.map((p) => p[2]).join(",")}`
+      + "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max"
+      + "&timezone=Asia%2FTaipei&forecast_days=16";
+    const res = await fetch(url);
+    if (!res.ok) return;
+    let arr = await res.json();
+    if (!Array.isArray(arr)) arr = [arr];
+    weather.points = {};
+    arr.forEach((r, i) => { weather.points[pts[i][1] + "," + pts[i][2]] = r.daily; });
+    weather.fetchedAt = Date.now();
+  } catch {}
+}
+
+function renderWeather() {
+  const start = tripStartDate();
+  document.querySelectorAll(".weather-row").forEach((row) => {
+    const dayId = row.dataset.wday;
+    const idx = data.days.findIndex((d) => d.id === dayId);
+    const date = new Date(start); date.setDate(date.getDate() + idx);
+    const iso = localISO(date);
+    const dateLabel = `${date.getMonth() + 1}/${date.getDate()}`;
+    const pts = WEATHER_POINTS[dayId] || [];
+    const chips = [];
+    for (const [name, lat, lon] of pts) {
+      const daily = weather.points[lat + "," + lon];
+      if (!daily) continue;
+      const di = daily.time.indexOf(iso);
+      if (di === -1) continue;
+      const [icon, label] = wmoIcon(daily.weather_code[di]);
+      chips.push(`<span class="wx-chip" title="${esc(name)} ${label}">${esc(name)} ${icon} ${Math.round(daily.temperature_2m_max[di])}°/${Math.round(daily.temperature_2m_min[di])}° ☔${daily.precipitation_probability_max[di]}%</span>`);
+    }
+    if (chips.length) {
+      row.innerHTML = `<span class="wx-date">🗓️ ${dateLabel}</span>` + chips.join("");
+    } else if (Object.keys(weather.points).length) {
+      row.innerHTML = `<span class="wx-date">🗓️ ${dateLabel} 距今較遠,進入 16 天預報範圍後自動顯示${data.startDate ? "" : "(請先在總覽設定出發日)"}</span>`;
+    } else {
+      row.innerHTML = `<span class="wx-date">天氣載入中…</span>`;
+    }
+  });
 }
 
 // ─── 使用者/設定/紀錄 ─────────────────────────────────────────

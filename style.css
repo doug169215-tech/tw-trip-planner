@@ -142,6 +142,27 @@ main { max-width: 60rem; margin: 0 auto; padding: 1rem 1.2rem; }
 /* 總覽表格 */
 .day-head table td, .day-head table th { border-bottom: 1px solid rgba(255,255,255,.25); }
 
+/* ── 天氣列 ── */
+.weather-row { display: flex; flex-wrap: wrap; gap: .45rem; align-items: center; margin-top: .6em; }
+.weather-row:empty { display: none; }
+.wx-date { font-size: .8rem; color: var(--ink-soft); font-weight: 700; }
+.wx-chip {
+  font-size: .8rem; font-weight: 700; white-space: nowrap;
+  background: rgba(255, 255, 255, .88); color: var(--sea);
+  border-radius: 999px; padding: .18em .7em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 出發日設定 ── */
+.startdate-row { font-size: .95rem; font-weight: 700; display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; }
+.startdate-row input[type="date"] {
+  font-family: inherit; font-size: .92rem; font-weight: 700;
+  border: 1px solid rgba(255, 255, 255, .5); border-radius: 10px;
+  background: rgba(255, 255, 255, .9); color: var(--sea);
+  padding: .3em .6em;
+}
+.startdate-row small { font-weight: 400; font-size: .75rem; color: var(--ink-soft); }
+
 /* ── 行程卡片 ── */
 .item-list { display: flex; flex-direction: column; gap: .55rem; min-height: 2.5rem; }
 .item-card {
