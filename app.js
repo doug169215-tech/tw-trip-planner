@@ -9,7 +9,7 @@ const TYPE_LABEL = { spot: "景點", meal: "餐食", transport: "車程", stay: 
 
 let data = null;          // 行程資料(含 history)
 let currentUser = null;
-let settings = { deepseek: "", tavily: "", ghtoken: "" };
+let settings = { deepseek: "", tavily: "", ghtoken: "", proxy: "", teamcode: "" };
 let dirty = false;        // 本機有未同步修改
 let activeDay = "overview";
 let editing = null;       // { dayId, itemId } 或 { dayId, itemId:null }(新增)
@@ -303,11 +303,19 @@ function deleteItem() {
 }
 
 // ─── AI 智慧辨識(DeepSeek 車程估算 + Tavily 景點介紹) ────────
+// 代理模式:填了 Worker 網址+通行碼,金鑰留在伺服器端
+const useProxy = () => !!(settings.proxy && settings.teamcode);
+const aiEndpoint = (svc) => useProxy()
+  ? { url: settings.proxy.replace(/\/+$/, "") + "/" + svc, headers: { "Content-Type": "application/json", "X-Team-Code": settings.teamcode } }
+  : svc === "deepseek"
+    ? { url: "https://api.deepseek.com/chat/completions", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${settings.deepseek}` } }
+    : { url: "https://api.tavily.com/search", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${settings.tavily}` } };
+
 async function runAI() {
   const title = $("#item-title").value.trim();
   if (!title) { toast("請先填寫地點名稱"); return; }
-  if (!settings.deepseek && !settings.tavily) {
-    toast("請先到 ⚙️ 設定填入 DeepSeek / Tavily API Key");
+  if (!useProxy() && !settings.deepseek && !settings.tavily) {
+    toast("請先到 ⚙️ 設定填入 Worker 代理(向團長索取)或 API Key");
     return;
   }
   const status = $("#ai-status");
@@ -320,12 +328,13 @@ async function runAI() {
   const parts = [];
 
   // 1) Tavily:景點介紹
-  if (settings.tavily) {
+  if (useProxy() || settings.tavily) {
     status.textContent = "🔍 Tavily 搜尋景點介紹中…";
     try {
-      const res = await fetch("https://api.tavily.com/search", {
+      const ep = aiEndpoint("tavily");
+      const res = await fetch(ep.url, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${settings.tavily}` },
+        headers: ep.headers,
         body: JSON.stringify({ query: `台灣 ${title} 景點介紹 特色`, search_depth: "basic", include_answer: true, max_results: 3 }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -340,7 +349,7 @@ async function runAI() {
   }
 
   // 2) DeepSeek:車程與停留時間估算
-  if (settings.deepseek) {
+  if (useProxy() || settings.deepseek) {
     status.textContent = "🧠 DeepSeek 估算車程與停留時間中…";
     try {
       const prompt = [
@@ -350,9 +359,10 @@ async function runAI() {
         `請估算:1) 從前一站開車到新地點的分鐘數 2) 該地點的建議停留分鐘數 3) 一句 20 字內的排程建議。`,
         `僅回傳 JSON:{"travel_minutes":數字,"stay_minutes":數字,"advice":"字串"}`,
       ].join("\n");
-      const res = await fetch("https://api.deepseek.com/chat/completions", {
+      const ep = aiEndpoint("deepseek");
+      const res = await fetch(ep.url, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${settings.deepseek}` },
+        headers: ep.headers,
         body: JSON.stringify({
           model: "deepseek-chat",
           messages: [{ role: "user", content: prompt }],
@@ -499,6 +509,8 @@ function doLogin() {
 }
 
 function openSettings() {
+  $("#set-proxy").value = settings.proxy;
+  $("#set-teamcode").value = settings.teamcode;
   $("#set-deepseek").value = settings.deepseek;
   $("#set-tavily").value = settings.tavily;
   $("#set-ghtoken").value = settings.ghtoken;
@@ -506,6 +518,8 @@ function openSettings() {
 }
 
 function saveSettings() {
+  settings.proxy = $("#set-proxy").value.trim();
+  settings.teamcode = $("#set-teamcode").value.trim();
   settings.deepseek = $("#set-deepseek").value.trim();
   settings.tavily = $("#set-tavily").value.trim();
   settings.ghtoken = $("#set-ghtoken").value.trim();
