@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-14T12:21:07.000Z",
+  "updatedAt": "2026-07-14T12:29:00.000Z",
   "startDate": "2026-07-17",
   "title": "四天三夜環島|海線主軸版",
   "subtitle": "8 人自駕 · 台11線海線為主 · 新竹出發(週五-週一)",
@@ -162,7 +162,7 @@
       "title": "南迴跨越與熱氣球嘉年華",
       "route": "恆春 → 南迴 → 台東 → 鹿野 → 台東市",
       "lodging": "廷海特潮流民宿(台東市浙江路 70 號)",
-      "lodgingUrl": "https://share.google/T2GDsiKo3HeoUU2WN",
+      "lodgingUrl": "https://www.google.com/maps/search/?api=1&query=%E5%BB%B7%E6%B5%B7%E7%89%B9%E6%BD%AE%E6%B5%81%E6%B0%91%E5%AE%BF%20%E5%8F%B0%E6%9D%B1%E5%B8%82%E6%B5%99%E6%B1%9F%E8%B7%AF70%E8%99%9F",
       "trafficTips": [
         "熱氣球期間鹿野高台塞車、搶車位;另一版本建議 14:15 前抵達卡位。"
       ],
@@ -296,7 +296,7 @@
       "title": "台東深度遊 → 台11海線北上",
       "route": "台東 → 小野柳 → 成功 → 三仙台 → 石梯坪 → 花蓮市",
       "lodging": "熙家民宿",
-      "lodgingUrl": "https://share.google/ZoDSbZCqu0t25aD4x",
+      "lodgingUrl": "https://www.google.com/maps/search/?api=1&query=%E7%86%99%E5%AE%B6%E6%B0%91%E5%AE%BF%20%E8%8A%B1%E8%93%AE%E5%B8%82",
       "trafficTips": [
         "走台 11 線海岸公路,欣賞東海岸海景,沿途定點休息。"
       ],
@@ -597,6 +597,11 @@
     }
   ],
   "history": [
+    {
+      "ts": "2026-07-14T12:29:00.000Z",
+      "user": "系統",
+      "text": "修正 D2 廷海特、D3 熙家民宿的 Google Maps 連結"
+    },
     {
       "ts": "2026-07-14T12:21:07.000Z",
       "user": "系統",
