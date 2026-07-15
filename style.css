@@ -133,6 +133,21 @@ main { max-width: 60rem; margin: 0 auto; padding: 1rem 1.2rem; }
 }
 .day-head h2 { margin: 0 0 .15em; font-size: 1.1rem; text-shadow: 0 1px 4px rgba(0, 40, 60, .25); }
 .day-route { color: #fff; font-weight: 700; font-size: .9rem; margin: 0; opacity: .95; }
+.route-edit {
+  background: none; border: none; cursor: pointer; font-size: .85rem;
+  padding: 0 .2em; opacity: .7; vertical-align: middle;
+}
+.route-edit:hover { opacity: 1; }
+.route-auto {
+  font-family: inherit; font-size: .68rem; font-weight: 800; cursor: pointer;
+  background: rgba(255, 255, 255, .88); color: var(--sun);
+  border: none; border-radius: 999px; padding: .1em .6em; vertical-align: middle;
+}
+.route-mode {
+  font-size: .66rem; font-weight: 800;
+  background: rgba(255, 255, 255, .3); color: #fff;
+  border-radius: 999px; padding: .1em .55em; vertical-align: middle;
+}
 .day-lodging { font-size: .85rem; color: var(--ink-soft); margin: .3em 0 0; }
 .traffic-tip {
   margin-top: .6em; padding: .5em .8em; border-radius: 10px;

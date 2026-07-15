@@ -298,6 +298,32 @@ function renderPanels() {
     btn.onclick = () => aiRetime(btn.dataset.day);
   });
 
+  // 路線:手動覆寫 / 改回自動
+  main.querySelectorAll(".route-edit").forEach((btn) => {
+    btn.onclick = () => {
+      const day = data.days.find((d) => d.id === btn.dataset.day);
+      const val = window.prompt("手動輸入路線(地點以「 → 」分隔;清空按確定=改回自動):", routeOf(day));
+      if (val === null) return;
+      if (val.trim()) {
+        day.route = val.trim();
+        day.routeMode = "manual";
+        commit(`手動覆寫 ${day.name} 路線:${val.trim().slice(0, 40)}`);
+      } else {
+        day.routeMode = "auto";
+        commit(`${day.name} 路線改回自動產生`);
+      }
+      renderPanels();
+    };
+  });
+  main.querySelectorAll(".route-auto").forEach((btn) => {
+    btn.onclick = () => {
+      const day = data.days.find((d) => d.id === btn.dataset.day);
+      day.routeMode = "auto";
+      commit(`${day.name} 路線改回自動產生`);
+      renderPanels();
+    };
+  });
+
   renderWeather();
 
   // 各日路線圖:點開才載入地圖(避免一次抓四張)
@@ -348,7 +374,7 @@ async function initRouteMap(dayId) {
   const el = document.getElementById("rmap-" + dayId);
   const day = data.days.find((d) => d.id === dayId);
   if (!el || !day) return;
-  const pts = routeStops(day.route).map((s) => [s, ROUTE_COORDS[s]]).filter((x) => x[1]);
+  const pts = routeStops(routeOf(day)).map((s) => [s, ROUTE_COORDS[s]]).filter((x) => x[1]);
   if (pts.length < 2) return;
 
   const map = L.map(el, { scrollWheelZoom: false });
@@ -390,7 +416,7 @@ function addRouteInfo(map, text) {
 function renderOverview() {
   const act = activeDay === "overview" ? "active" : "";
   const summaryRows = data.days.map((d) =>
-    `<tr><td><b>${esc(d.name.replace(/^Day\s*/, "D"))}</b><br><small>${esc(d.weekday)}</small></td><td>${esc(d.route)}</td><td>${lodgingHtml(d) || "—"}</td></tr>`
+    `<tr><td><b>${esc(d.name.replace(/^Day\s*/, "D"))}</b><br><small>${esc(d.weekday)}</small></td><td>${esc(routeOf(d))}</td><td>${lodgingHtml(d) || "—"}</td></tr>`
   ).join("");
   return `
   <section class="day-panel ${act}" data-panel="overview">
@@ -408,7 +434,7 @@ function renderOverview() {
       <h2 style="margin-top:1em">🗺️ 各日路線圖</h2>
       ${data.days.map((d) => `
         <details class="route-map-block" data-day="${d.id}">
-          <summary><b>${esc(d.name.replace(/^Day\s*/, "D"))}</b> ${esc(d.route)}</summary>
+          <summary><b>${esc(d.name.replace(/^Day\s*/, "D"))}</b> ${esc(routeOf(d))}</summary>
           <div class="route-map" id="rmap-${d.id}"></div>
         </details>`).join("")}
     </div>
@@ -464,7 +490,12 @@ function renderDay(day) {
   <section class="day-panel ${act}" data-panel="${day.id}">
     <div class="day-head">
       <h2>${esc(day.name)}(${esc(day.weekday)})|${esc(day.title)}</h2>
-      <p class="day-route">${esc(day.route)}</p>
+      <p class="day-route">🧭 ${esc(routeOf(day))}
+        <button class="route-edit" data-day="${day.id}" title="手動覆寫路線">✍️</button>
+        ${day.routeMode === "manual"
+          ? `<button class="route-auto" data-day="${day.id}" title="改回自動產生(依行程卡片即時更新)">↺ 自動</button>`
+          : `<span class="route-mode" title="路線依行程卡片自動產生,改行程會即時更新">自動</span>`}
+      </p>
       ${day.lodging ? `<p class="day-lodging">🏠 住宿:${lodgingHtml(day)}</p>` : ""}
       ${(day.trafficTips || []).map((t) => `<div class="traffic-tip">🚦 ${esc(t)}</div>`).join("")}
       <div class="weather-row" data-wday="${day.id}"></div>
@@ -661,7 +692,7 @@ async function aiComplete(dayId, itemId) {
       body: JSON.stringify({
         model: DEEPSEEK_MODEL,
         messages: [{ role: "user", content: [
-          `台灣旅遊行程助手。${day.name} 路線:${day.route}。新地點:「${it.title}」。`,
+          `台灣旅遊行程助手。${day.name} 路線:${routeOf(day)}。新地點:「${it.title}」。`,
           `判斷:1) type 四選一:spot(景點)/meal(餐食)/stay(住宿或休息)/prep(加油、補給等整備)`,
           `2) note:20 字內的實用提示(停車、必點、注意事項擇一重點)`,
           `僅回傳 JSON:{"type":"...","note":"..."}`,
@@ -718,7 +749,7 @@ async function aiRetime(dayId) {
     }).join("\n");
     const firstTime = (String(day.items[0].time).match(/\d{1,2}:\d{2}/) || ["08:00"])[0];
     const prompt = [
-      `你是台灣自駕旅遊排程助手。8 人自駕環島,${day.name} 路線:${day.route}。`,
+      `你是台灣自駕旅遊排程助手。8 人自駕環島,${day.name} 路線:${routeOf(day)}。`,
       `行程順序剛被調整過,舊的時間已全部失效。以下是今天「新的順序」:`,
       list,
       `請「嚴格依照這個順序」從頭重新計算每一站的到達與離開時間:`,
@@ -891,7 +922,7 @@ async function runAI() {
     status.textContent = "🧠 DeepSeek 估算車程與停留時間中…";
     try {
       const prompt = [
-        `你是台灣自駕旅遊規劃助手。8 人自駕環島,${day.name} 路線:${day.route}。`,
+        `你是台灣自駕旅遊規劃助手。8 人自駕環島,${day.name} 路線:${routeOf(day)}。`,
         prevItem ? `前一個行程點:「${prevItem.title}」(${prevItem.time})。` : "這是當天第一個行程點。",
         `新地點:「${title}」。`,
         `請估算:1) 從前一站開車到新地點的分鐘數 2) 該地點的建議停留分鐘數 3) 一句 20 字內的排程建議。`,
@@ -954,6 +985,7 @@ const WEATHER_POINTS = {
 // 地名 → 座標(用於行程卡片的逐時天氣;從卡片標題自動辨識)
 const PLACES = [
   ["新竹", 24.81, 120.97], ["竹北", 24.84, 121.00], ["台中", 24.16, 120.65],
+  ["禾果", 24.16, 120.65], ["芃家", 21.99, 120.76], ["廷海特", 22.76, 121.14], ["熙家", 23.98, 121.61],
   ["台南", 22.99, 120.20], ["國華街", 22.99, 120.20], ["西市場", 22.99, 120.20],
   ["枋山", 22.26, 120.65], ["枋野", 22.26, 120.65], ["愛琴海岸", 22.31, 120.63],
   ["恆春", 22.00, 120.74], ["墾丁", 21.94, 120.79],
@@ -981,6 +1013,38 @@ function matchPlace(text) {
     if (end > bestEnd || (end === bestEnd && p[0].length > bestLen)) { best = p; bestEnd = end; bestLen = p[0].length; }
   }
   return best;
+}
+
+// ─── 路線自動產生(自動產生+手動覆寫雙模式) ─────────────────
+// 關鍵字 → 路線上顯示的正規地名
+const ROUTE_CANON = {
+  "竹北": "新竹", "禾果": "台中", "國華街": "台南", "西市場": "台南",
+  "枋野": "枋山", "愛琴海岸": "枋山", "芃家": "墾丁",
+  "鐵花": "台東", "波浪屋": "台東", "琵琶湖": "台東", "森林公園": "台東", "廷海特": "台東",
+  "熱氣球": "鹿野", "長濱": "金剛大道",
+  "東大門": "花蓮", "熙家": "花蓮",
+  "崇德": "清水斷崖", "台泥": "蘇花", "DAKA": "蘇花", "和平": "蘇花",
+};
+
+// 依當天行程卡片自動產生路線字串(含 travel 備註中的公路名)
+function routeAuto(day) {
+  const stops = [];
+  const push = (n) => { if (n && stops[stops.length - 1] !== n) stops.push(n); };
+  const seed = (WEATHER_POINTS[day.id] || [])[0];
+  if (seed) push(ROUTE_CANON[seed[0]] || seed[0]);
+  for (const it of day.items) {
+    const roadTxt = `${it.title} ${it.note || ""} ${it.travel?.note || ""}`;
+    for (const road of ["南迴", "蘇花"]) if (roadTxt.includes(road)) push(road);
+    const p = matchPlace(`${it.title} ${it.note || ""}`);
+    if (p) push(ROUTE_CANON[p[0]] || p[0]);
+  }
+  return stops.length >= 2 ? stops.join(" → ") : "";
+}
+
+// 顯示用路線:手動模式用 day.route,自動模式即時產生(產不出來退回手動字串)
+function routeOf(day) {
+  if (day.routeMode === "manual") return day.route || routeAuto(day);
+  return routeAuto(day) || day.route || "";
 }
 
 // 解析行程點的起始時間(小時),支援 "HH:MM" 與 "HH:MM-HH:MM"
