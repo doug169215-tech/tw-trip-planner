@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-14T17:19:10.129Z",
+  "updatedAt": "2026-07-15T00:59:34.149Z",
   "startDate": "2026-07-17",
   "title": "四天三夜環島|海線主軸版",
   "subtitle": "8 人自駕 · 台11線海線為主 · 新竹出發(週五-週一)",
@@ -257,6 +257,15 @@
           "type": "stay",
           "note": "",
           "intro": ""
+        },
+        {
+          "id": "imrldhhtxbrqb",
+          "time": "",
+          "title": "台東博覽會",
+          "type": "spot",
+          "note": "注意展期與開放時間",
+          "intro": "",
+          "aiPending": true
         }
       ],
       "restaurants": [
@@ -575,6 +584,11 @@
     }
   ],
   "history": [
+    {
+      "ts": "2026-07-15T00:59:34.149Z",
+      "user": "狗狗",
+      "text": "新增「台東博覽會」到 Day 2(AI 補全中)"
+    },
     {
       "ts": "2026-07-14T17:19:10.129Z",
       "user": "系統",
