@@ -222,6 +222,12 @@ main { max-width: 60rem; margin: 0 auto; padding: 1rem 1.2rem; }
 .ai-retime { margin-top: .6em; font-size: .85rem; }
 .ai-retime:disabled { opacity: .6; cursor: wait; }
 .map-link { text-decoration: none; font-size: .88rem; line-height: 1; }
+.route-link {
+  display: inline-block; margin-top: .25em; font-size: .78rem; font-weight: 700;
+  color: var(--sea); text-decoration: none;
+  background: rgba(255, 255, 255, .82); border-radius: 999px; padding: .12em .6em;
+}
+.route-link:hover { filter: brightness(1.06); }
 .lodging-link { color: inherit; font-weight: 700; text-underline-offset: 3px; }
 .lodging-link:hover { filter: brightness(1.2); }
 .map-link:hover { filter: brightness(1.3); }
