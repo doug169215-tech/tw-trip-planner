@@ -256,6 +256,11 @@ function renderPanels() {
 
   renderWeather();
 
+  // 各日路線圖:點開才載入地圖(避免一次抓四張)
+  main.querySelectorAll(".route-map-block").forEach((blk) => {
+    blk.addEventListener("toggle", () => { if (blk.open) initRouteMap(blk.dataset.day); });
+  });
+
   // 拖曳排序(跨天共用群組;只有停靠點卡片可拖,車程列不可)
   main.querySelectorAll(".item-list").forEach((list) => {
     sortables.push(new Sortable(list, {
@@ -273,6 +278,69 @@ function renderPanels() {
       onEnd: onDragEnd,
     }));
   });
+}
+
+// 路線城市/地點 → 座標(用於頁內 Leaflet 路線圖);「南迴」「蘇花」取公路上的代表點
+const ROUTE_COORDS = {
+  "新竹": [24.80, 120.97], "台中": [24.15, 120.66], "台南": [22.99, 120.21],
+  "枋山": [22.26, 120.65], "恆春": [22.00, 120.74],
+  "南迴": [22.36, 120.90], "台東": [22.75, 121.15], "台東市": [22.76, 121.14],
+  "鹿野": [22.91, 121.13], "小野柳": [22.80, 121.19], "成功": [23.10, 121.37],
+  "三仙台": [23.12, 121.41], "石梯坪": [23.49, 121.51],
+  "花蓮": [23.98, 121.60], "花蓮市": [23.98, 121.61], "七星潭": [24.03, 121.62],
+  "蘇花": [24.30, 121.75], "蘇澳": [24.59, 121.85], "礁溪": [24.83, 121.77],
+};
+
+function routeStops(route) {
+  return String(route).split(/→|➜|->/).map((s) => s.trim()).filter(Boolean);
+}
+
+// 已初始化的地圖(避免重複建立)
+const routeMaps = {};
+
+// 點開某天路線圖時建立 Leaflet 地圖:OSM 圖磚 + OSRM 免費路徑(沿道路),失敗則退回直線
+async function initRouteMap(dayId) {
+  if (routeMaps[dayId] || typeof L === "undefined") return;
+  const el = document.getElementById("rmap-" + dayId);
+  const day = data.days.find((d) => d.id === dayId);
+  if (!el || !day) return;
+  const pts = routeStops(day.route).map((s) => [s, ROUTE_COORDS[s]]).filter((x) => x[1]);
+  if (pts.length < 2) return;
+
+  const map = L.map(el, { scrollWheelZoom: false });
+  routeMaps[dayId] = map;
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "© OpenStreetMap", maxZoom: 17,
+  }).addTo(map);
+  pts.forEach(([name, c]) => L.marker(c).addTo(map).bindPopup(name));
+  const latlngs = pts.map((x) => x[1]);
+  map.fitBounds(latlngs, { padding: [30, 30] });
+  setTimeout(() => map.invalidateSize(), 60); // details 展開後容器才有尺寸
+
+  // OSRM 沿道路路徑(免金鑰);座標為 lon,lat
+  try {
+    const coords = pts.map((x) => `${x[1][1]},${x[1][0]}`).join(";");
+    const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`);
+    if (res.ok) {
+      const j = await res.json();
+      const line = j.routes && j.routes[0] && j.routes[0].geometry.coordinates.map((c) => [c[1], c[0]]);
+      if (line) {
+        L.polyline(line, { color: "#1f6f8b", weight: 5, opacity: .85 }).addTo(map);
+        const km = Math.round(j.routes[0].distance / 1000);
+        const min = Math.round(j.routes[0].duration / 60);
+        L.control && addRouteInfo(map, `🚗 約 ${km} 公里 · ${Math.floor(min / 60)} 小時 ${min % 60} 分`);
+        map.fitBounds(L.polyline(line).getBounds(), { padding: [30, 30] });
+        return;
+      }
+    }
+  } catch {}
+  L.polyline(latlngs, { color: "#1f6f8b", weight: 4, dashArray: "6 6", opacity: .7 }).addTo(map); // 退回直線
+}
+
+function addRouteInfo(map, text) {
+  const c = L.control({ position: "bottomleft" });
+  c.onAdd = () => { const d = L.DomUtil.create("div", "route-info"); d.textContent = text; return d; };
+  c.addTo(map);
 }
 
 // 把「A → B → C」路線字串轉成 Google Maps 多點導航網址(在地圖上畫出當天路線)
@@ -303,6 +371,12 @@ function renderOverview() {
         <thead><tr style="text-align:left;color:var(--ink-soft)"><th style="padding:.3em .5em">天</th><th style="padding:.3em .5em">路線</th><th style="padding:.3em .5em">住宿</th></tr></thead>
         <tbody>${summaryRows}</tbody>
       </table></div>
+      <h2 style="margin-top:1em">🗺️ 各日路線圖</h2>
+      ${data.days.map((d) => `
+        <details class="route-map-block" data-day="${d.id}">
+          <summary><b>${esc(d.name.replace(/^Day\s*/, "D"))}</b> ${esc(d.route)}</summary>
+          <div class="route-map" id="rmap-${d.id}"></div>
+        </details>`).join("")}
     </div>
     <div class="day-head">
       <h2>✅ 行前確認清單</h2>

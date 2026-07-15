@@ -228,6 +228,14 @@ main { max-width: 60rem; margin: 0 auto; padding: 1rem 1.2rem; }
   background: rgba(255, 255, 255, .82); border-radius: 999px; padding: .12em .6em;
 }
 .route-link:hover { filter: brightness(1.06); }
+.route-map-block { margin: .4em 0; background: rgba(255, 255, 255, .12); border-radius: 12px; padding: .5em .7em; }
+.route-map-block summary { cursor: pointer; font-size: .88rem; font-weight: 700; }
+.route-map { height: 340px; margin-top: .6em; border-radius: 12px; overflow: hidden; }
+.route-info {
+  background: rgba(255, 255, 255, .92); color: var(--sea);
+  font-size: .78rem; font-weight: 700; padding: .25em .6em; border-radius: 8px;
+  font-variant-numeric: tabular-nums;
+}
 .lodging-link { color: inherit; font-weight: 700; text-underline-offset: 3px; }
 .lodging-link:hover { filter: brightness(1.2); }
 .map-link:hover { filter: brightness(1.3); }
