@@ -1179,9 +1179,9 @@ function renderWeather() {
       chips.push(`<span class="wx-chip" title="${esc(name)} ${label},預估日雨量 ${mm ?? 0}mm">${esc(name)} ${icon} ${Math.round(daily.temperature_2m_max[di])}°/${Math.round(daily.temperature_2m_min[di])}° ☔${daily.precipitation_probability_max[di]}%${mm ? ` 💧${mm}mm` : ""}</span>`);
     }
     if (chips.length) {
-      row.innerHTML = `<span class="wx-date">🗓️ ${dateLabel}</span>` + chips.join("");
+      row.innerHTML = chips.join("");
     } else if (Object.keys(weather.points).length) {
-      row.innerHTML = `<span class="wx-date">🗓️ ${dateLabel} 距今較遠,進入 16 天預報範圍後自動顯示</span>`;
+      row.innerHTML = `<span class="wx-date">天氣預報將於接近出發日時自動顯示</span>`;
     } else {
       row.innerHTML = `<span class="wx-date">天氣載入中…</span>`;
     }
