@@ -515,6 +515,28 @@ function scheduleRetime(dayId) {
   retimeTimers[dayId] = setTimeout(() => aiRetime(dayId), 3000);
 }
 
+// 把文字統一轉成台灣慣用繁體中文(簡體或英文都轉;已是繁中則幾乎原樣)。失敗則回原文
+async function toTaiwanese(text, ep) {
+  text = String(text || "").trim();
+  if (!text) return "";
+  try {
+    const res = await fetch(ep.url, {
+      method: "POST",
+      headers: ep.headers,
+      body: JSON.stringify({
+        model: "deepseek-chat",
+        messages: [{ role: "user", content: `把以下景點介紹改寫成台灣慣用的繁體中文(用語、字形都要台灣化,例如「經濟/發展/台東」而非簡體),語氣自然通順,不要加標題或引號,只回傳結果:\n\n${text}` }],
+        temperature: 0.2,
+      }),
+    });
+    if (res.ok) {
+      const out = (await res.json()).choices[0].message.content.trim();
+      if (out) return out;
+    }
+  } catch {}
+  return text;
+}
+
 // ─── 快速新增:只填名稱,AI 補全類型/介紹,拖到位置後自動排時間 ──
 function startQuickAdd(btn) {
   const dayId = btn.dataset.day;
@@ -594,19 +616,7 @@ async function aiComplete(dayId, itemId) {
     });
     if (res.ok) {
       const j = await res.json();
-      let intro = j.answer || "";
-      if (intro && (intro.match(/[A-Za-z]/g) || []).length > intro.length * 0.3) {
-        const tr = await fetch(ep.url, {
-          method: "POST",
-          headers: ep.headers,
-          body: JSON.stringify({
-            model: "deepseek-chat",
-            messages: [{ role: "user", content: `將以下景點介紹翻譯成繁體中文,語氣自然,只回傳譯文:\n\n${intro}` }],
-            temperature: 0.2,
-          }),
-        });
-        if (tr.ok) intro = (await tr.json()).choices[0].message.content.trim();
-      }
+      let intro = await toTaiwanese(j.answer || "", ep); // 一律轉台灣繁體中文(簡體/英文都轉)
       [day, it] = findItem(); if (!it) return;
       if (intro && !it.intro) it.intro = intro;
     }
@@ -787,25 +797,8 @@ async function runAI() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const j = await res.json();
       if (j.answer) {
-        let intro = j.answer;
-        // Tavily 偶爾回英文:偵測到大量英文就交給 DeepSeek 翻成繁體中文
-        const latin = (intro.match(/[A-Za-z]/g) || []).length;
-        if (latin > intro.length * 0.3) {
-          status.textContent = "🈶 翻譯景點介紹為中文…";
-          try {
-            const dep = aiEndpoint("deepseek");
-            const tr = await fetch(dep.url, {
-              method: "POST",
-              headers: dep.headers,
-              body: JSON.stringify({
-                model: "deepseek-chat",
-                messages: [{ role: "user", content: `將以下景點介紹翻譯成繁體中文,語氣自然,只回傳譯文:\n\n${intro}` }],
-                temperature: 0.2,
-              }),
-            });
-            if (tr.ok) intro = (await tr.json()).choices[0].message.content.trim();
-          } catch {}
-        }
+        status.textContent = "🈶 整理為繁體中文…";
+        const intro = await toTaiwanese(j.answer, aiEndpoint("deepseek")); // 一律轉台灣繁體中文
         $("#item-intro").value = intro;
         parts.push("✅ 已取得景點介紹(Tavily)");
       } else parts.push("⚠️ Tavily 沒有回傳摘要");
