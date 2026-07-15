@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-15T11:59:39.686Z",
+  "updatedAt": "2026-07-15T12:00:33.965Z",
   "startDate": "2026-07-17",
   "title": "四天三夜|墾丁 · 台東 · 花蓮",
   "subtitle": "8 人自駕 · 新竹出發(週五-週一)",
@@ -71,37 +71,37 @@
         },
         {
           "id": "d1-03",
-          "time": "10:10-11:00",
+          "time": "09:40-10:30",
           "title": "禾果咖啡 Fruit Coffee",
           "type": "meal",
           "note": "早餐、咖啡、洗手間;短暫伸展",
           "intro": "",
           "travel": {
-            "minutes": 100
+            "minutes": 70
           }
         },
         {
           "id": "d1-05",
-          "time": "13:30-15:15",
+          "time": "12:00-13:45",
           "title": "西門淺草、西市場、國華街",
           "type": "spot",
           "note": "市場散策+午餐;建議停放海安路地下停車場",
           "intro": "台南中西區的百年市場街區。西市場(大菜市)是日治時期南台灣最大的市場,修復後保留華麗的老建築;國華街三段是全台小吃密度最高的街道之一,碗粿、春捲、小卷米粉都在步行範圍內;一旁西門淺草青春新天地聚集文創與古著小店,適合飯後散策。",
           "travel": {
-            "minutes": 150
+            "minutes": 90
           },
           "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/%E8%A5%BF%E5%B8%82%E5%A0%B4%E6%9C%AC%E9%A4%A8%E4%B8%BB%E5%85%A5%E5%8F%A3.jpg/960px-%E8%A5%BF%E5%B8%82%E5%A0%B4%E6%9C%AC%E9%A4%A8%E4%B8%BB%E5%85%A5%E5%8F%A3.jpg",
           "imgCredit": "Pbdragonwang · CC BY-SA 4.0 / Wikimedia Commons"
         },
         {
           "id": "d1-07",
-          "time": "17:30-18:15",
+          "time": "15:35-16:20",
           "title": "枋野秘境海景咖啡",
           "type": "spot",
           "note": "看海、拍照、喝飲料",
           "intro": "隱身台1線枋山海岸的秘境咖啡座,面向台灣海峽,視野開闊無遮蔽,傍晚時分可看夕陽把海面染成金色,是南下墾丁途中最放鬆的看海中繼站。",
           "travel": {
-            "minutes": 135,
+            "minutes": 110,
             "note": "國1 → 台82 → 國3 → 南州下 → 台1"
           },
           "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/%E6%9E%8B%E5%B1%B1%E9%84%89%E6%B5%B7%E7%81%98.JPEG/960px-%E6%9E%8B%E5%B1%B1%E9%84%89%E6%B5%B7%E7%81%98.JPEG",
@@ -109,28 +109,31 @@
         },
         {
           "id": "imrm11yuxsbct",
-          "time": "",
+          "time": "16:50-17:20",
           "title": "阿香綠豆蒜",
           "type": "meal",
           "note": "必點招牌綠豆蒜，停車方便",
           "intro": "阿香綠豆蒜是屏東車城的特色小吃，用綠豆搭配各種粉條熬煮而成，吃得到獨特的顆粒口感，價格也很親民。這家店已經營超過六十年，以招牌綠豆蒜打響名號。",
           "img": "https://pic.pimg.tw/niki423/1590824984-660099283_n.jpg",
-          "imgCredit": "Tavily 搜尋結果,如不合適可在編輯視窗更換"
+          "imgCredit": "Tavily 搜尋結果,如不合適可在編輯視窗更換",
+          "travel": {
+            "minutes": 30
+          }
         },
         {
           "id": "d1-09",
-          "time": "19:10-19:40",
+          "time": "17:50-18:20",
           "title": "入住、放行李",
           "type": "stay",
           "note": "",
           "intro": "",
           "travel": {
-            "minutes": 55
+            "minutes": 30
           }
         },
         {
           "id": "d1-10",
-          "time": "19:40-21:15",
+          "time": "18:20-19:55",
           "title": "晚餐:恆春鎮上或墾丁大街",
           "type": "meal",
           "note": "",
@@ -138,7 +141,7 @@
         },
         {
           "id": "d1-11",
-          "time": "21:30",
+          "time": "19:55",
           "title": "回 Villa 休息",
           "type": "stay",
           "note": "",
@@ -1098,6 +1101,11 @@
     }
   ],
   "history": [
+    {
+      "ts": "2026-07-15T12:00:33.965Z",
+      "user": "狗狗",
+      "text": "AI 重排 Day 1 時間與車程(更新 13 處)"
+    },
     {
       "ts": "2026-07-15T11:59:39.686Z",
       "user": "狗狗",
