@@ -1176,7 +1176,7 @@ function renderWeather() {
       if (di === -1) continue;
       const [icon, label] = wmoIcon(daily.weather_code[di]);
       const mm = fmtMm((daily.precipitation_sum || [])[di]);
-      chips.push(`<span class="wx-chip" title="${esc(name)} ${label},預估日雨量 ${mm ?? "?"}mm">${esc(name)} ${icon} ${Math.round(daily.temperature_2m_max[di])}°/${Math.round(daily.temperature_2m_min[di])}° ☔${daily.precipitation_probability_max[di]}%${mm != null ? ` 💧${mm}mm` : ""}</span>`);
+      chips.push(`<span class="wx-chip" title="${esc(name)} ${label},預估日雨量 ${mm ?? 0}mm">${esc(name)} ${icon} ${Math.round(daily.temperature_2m_max[di])}°/${Math.round(daily.temperature_2m_min[di])}° ☔${daily.precipitation_probability_max[di]}%${mm ? ` 💧${mm}mm` : ""}</span>`);
     }
     if (chips.length) {
       row.innerHTML = `<span class="wx-date">🗓️ ${dateLabel}</span>` + chips.join("");
