@@ -137,6 +137,14 @@ main { max-width: 60rem; margin: 0 auto; padding: 1rem 1.2rem; }
   background: none; border: none; cursor: pointer; font-size: .85rem;
   padding: 0 .2em; opacity: .7; vertical-align: middle;
 }
+.ai-tips-btn {
+  font-family: inherit; font-size: .72rem; font-weight: 700; cursor: pointer;
+  background: rgba(255, 255, 255, .2); color: #fff;
+  border: 1px solid rgba(255, 255, 255, .4); border-radius: 999px;
+  padding: .18em .8em; margin-top: .45em;
+}
+.ai-tips-btn:hover { background: rgba(255, 255, 255, .32); }
+.ai-tips-btn:disabled { opacity: .6; cursor: wait; }
 .route-edit:hover { opacity: 1; }
 .route-auto {
   font-family: inherit; font-size: .68rem; font-weight: 800; cursor: pointer;

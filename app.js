@@ -298,6 +298,11 @@ function renderPanels() {
     btn.onclick = () => aiRetime(btn.dataset.day);
   });
 
+  // AI 校對路況提示(依最新時刻,以專業導遊口吻重寫)
+  main.querySelectorAll(".ai-tips-btn").forEach((btn) => {
+    btn.onclick = () => aiReviseTips(btn.dataset.day, btn);
+  });
+
   // 路線:手動覆寫 / 改回自動
   main.querySelectorAll(".route-edit").forEach((btn) => {
     btn.onclick = () => {
@@ -498,6 +503,7 @@ function renderDay(day) {
       </p>
       ${day.lodging ? `<p class="day-lodging">🏠 住宿:${lodgingHtml(day)}</p>` : ""}
       ${(day.trafficTips || []).map((t) => `<div class="traffic-tip">🚦 ${esc(t)}</div>`).join("")}
+      ${(day.trafficTips || []).length ? `<button class="ai-tips-btn" data-day="${day.id}" title="行程改過之後,讓 AI 以專業導遊角度依最新時刻重寫上方提示">✨ AI 校對提示</button>` : ""}
       <div class="weather-row" data-wday="${day.id}"></div>
       <button class="btn btn-ai ai-retime" data-day="${day.id}" title="依目前卡片順序,由 AI 重新計算整天的時段">✨ AI 重排今日時間</button>
     </div>
@@ -732,6 +738,50 @@ async function aiComplete(dayId, itemId) {
   commit(`AI 補全「${it.title}」的類型與介紹`);
   renderPanels();
   aiRetime(day.id); // 依目前位置排入時間與車程
+}
+
+// ─── AI 校對路況提示:依當天最新時刻,以專業導遊口吻重寫 ────────
+async function aiReviseTips(dayId, btn) {
+  const day = data.days.find((d) => d.id === dayId);
+  if (!day || !(day.trafficTips || []).length) return;
+  if (btn) { btn.disabled = true; btn.textContent = "🧠 導遊 AI 校對中…"; }
+  try {
+    const schedule = day.items.map((it) => `${it.time} ${it.title}${it.travel?.minutes ? `(前段車程 ${it.travel.minutes} 分)` : ""}`).join("\n");
+    const prompt = [
+      `你是帶團 20 年的台灣專業導遊。${day.name}(${day.weekday},2026 年 7 月)路線:${routeOf(day)}。`,
+      `今天「最新確定」的時刻表:`,
+      schedule,
+      `既有的路況提示(時間可能已過時):`,
+      (day.trafficTips || []).map((t, i) => `${i + 1}. ${t}`).join("\n"),
+      `任務:依最新時刻表逐條改寫路況提示,要求:`,
+      `- 引用的時間必須和上面時刻表一致,不可留舊時間`,
+      `- 專業導遊口吻:具體路段+具體時間點+明確底線+超時的取捨動作,不空泛`,
+      `- 台灣慣用繁體中文,每條不超過 60 字;條數可增減(1-3 條)`,
+      `僅回傳 JSON:{"tips":["…","…"]}`,
+    ].join("\n");
+    const ep = aiEndpoint("deepseek");
+    const res = await fetch(ep.url, {
+      method: "POST",
+      headers: ep.headers,
+      body: JSON.stringify({
+        model: DEEPSEEK_MODEL,
+        messages: [{ role: "user", content: prompt }],
+        response_format: { type: "json_object" },
+        temperature: 0.3,
+      }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const j = await res.json();
+    const out = JSON.parse(j.choices[0].message.content);
+    if (!Array.isArray(out.tips) || !out.tips.length) throw new Error("AI 未回傳提示");
+    day.trafficTips = out.tips.map((t) => String(t).trim()).filter(Boolean).slice(0, 3);
+    commit(`AI 校對 ${day.name} 路況提示(依最新時刻重寫 ${day.trafficTips.length} 條)`);
+    renderPanels();
+    toast("✅ 路況提示已依最新時刻重寫(不滿意可按 ↩️ 復原)");
+  } catch (e) {
+    toast("❌ AI 校對失敗:" + e.message, 4000);
+    if (btn) { btn.disabled = false; btn.textContent = "✨ AI 校對提示"; }
+  }
 }
 
 // ─── AI 重排整天時間與車程(拖曳後自動觸發,也可手動按按鈕) ─────
