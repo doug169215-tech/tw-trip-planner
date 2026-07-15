@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-15T03:03:04.447Z",
+  "updatedAt": "2026-07-15T03:48:00.513Z",
   "startDate": "2026-07-17",
   "title": "四天三夜環島|海線主軸版",
   "subtitle": "8 人自駕 · 台11線海線為主 · 新竹出發(週五-週一)",
@@ -88,7 +88,9 @@
           "intro": "台南中西區的百年市場街區。西市場(大菜市)是日治時期南台灣最大的市場,修復後保留華麗的老建築;國華街三段是全台小吃密度最高的街道之一,碗粿、春捲、小卷米粉都在步行範圍內;一旁西門淺草青春新天地聚集文創與古著小店,適合飯後散策。",
           "travel": {
             "minutes": 150
-          }
+          },
+          "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/%E8%A5%BF%E5%B8%82%E5%A0%B4%E6%9C%AC%E9%A4%A8%E4%B8%BB%E5%85%A5%E5%8F%A3.jpg/960px-%E8%A5%BF%E5%B8%82%E5%A0%B4%E6%9C%AC%E9%A4%A8%E4%B8%BB%E5%85%A5%E5%8F%A3.jpg",
+          "imgCredit": "Pbdragonwang · CC BY-SA 4.0 / Wikimedia Commons"
         },
         {
           "id": "d1-07",
@@ -100,7 +102,9 @@
           "travel": {
             "minutes": 135,
             "note": "國1 → 台82 → 國3 → 南州下 → 台1"
-          }
+          },
+          "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/%E6%9E%8B%E5%B1%B1%E9%84%89%E6%B5%B7%E7%81%98.JPEG/960px-%E6%9E%8B%E5%B1%B1%E9%84%89%E6%B5%B7%E7%81%98.JPEG",
+          "imgCredit": "Aa7778273 · CC BY-SA 4.0 / Wikimedia Commons"
         },
         {
           "id": "d1-09",
@@ -221,7 +225,9 @@
           "intro": "鐵花新聚落由台鐵舊宿舍群改造,白天是文創聚落、晚上有現場音樂與熱氣球造型燈籠;TTstyle 原創館(波浪屋)以彩色貨櫃堆疊而成,集合原住民工藝、設計小店與美食,兩處相鄰步行可達。",
           "travel": {
             "minutes": 5
-          }
+          },
+          "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/%E9%81%94%E5%8D%A1%E9%AC%A7-%E9%90%B5%E8%8A%B1%E6%9D%91%E6%BC%94%E5%87%BA_11.jpg/960px-%E9%81%94%E5%8D%A1%E9%AC%A7-%E9%90%B5%E8%8A%B1%E6%9D%91%E6%BC%94%E5%87%BA_11.jpg",
+          "imgCredit": "Homima · CC BY-SA 4.0 / Wikimedia Commons"
         },
         {
           "id": "d2-07",
@@ -232,7 +238,9 @@
           "intro": "海拔約 350 公尺的高台地,可俯瞰卑南溪縱谷與花東縱谷稻田,視野遼闊,是台灣國際熱氣球嘉年華的主場地,也是飛行傘體驗勝地;活動期間山坡草地滿是野餐人潮。",
           "travel": {
             "minutes": 40
-          }
+          },
+          "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/%E9%B9%BF%E9%87%8E%E9%AB%98%E5%8F%B0_Luye_Gaotai_-_panoramio.jpg/960px-%E9%B9%BF%E9%87%8E%E9%AB%98%E5%8F%B0_Luye_Gaotai_-_panoramio.jpg",
+          "imgCredit": "lienyuan lee · CC BY 3.0 / Wikimedia Commons"
         },
         {
           "id": "d2-08",
@@ -243,7 +251,9 @@
           "intro": "台灣國際熱氣球嘉年華(2026/7/4-8/20,每週二公休)與劇場版吉伊卡哇聯名,全球唯一吉伊卡哇造型熱氣球活動期間天天現身鹿野高台;每日下午場 17:00-18:30 造型球展演+繫留體驗,是否展球視風況以官方當日公告為準。7/18 無光雕音樂會場次。",
           "travel": {
             "minutes": 5
-          }
+          },
+          "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Aerial_photograph_of_hot_air_balloons_during_Taiwan_International_Balloon_Festival_in_the_late_afternoon_on_8_June_2013.jpg/960px-Aerial_photograph_of_hot_air_balloons_during_Taiwan_International_Balloon_Festival_in_the_late_afternoon_on_8_June_2013.jpg",
+          "imgCredit": "Dan Cheung · CC BY-SA 2.0 / Wikimedia Commons"
         },
         {
           "id": "d2-10",
@@ -336,7 +346,9 @@
           "intro": "台東森林公園又稱「黑森林」,大片木麻黃林蔭間有平坦的自行車道;園內琵琶湖是地下湧泉形成的活水湖,湖水清澈如鏡、倒映綠林,清晨光線最美,適合晨間散步。",
           "travel": {
             "minutes": 10
-          }
+          },
+          "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Pipa_Lake_in_Taitung_Taiwan.jpg/960px-Pipa_Lake_in_Taitung_Taiwan.jpg",
+          "imgCredit": "李翔宇 · CC BY 3.0 / Wikimedia Commons"
         },
         {
           "id": "d3-03",
@@ -359,7 +371,9 @@
           "travel": {
             "minutes": 20,
             "note": "接台11線北上"
-          }
+          },
+          "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/%E5%B0%8F%E9%87%8E%E6%9F%B3%E7%9A%84%E7%A4%81%E7%9F%B3_%28259789669%29.jpeg/960px-%E5%B0%8F%E9%87%8E%E6%9F%B3%E7%9A%84%E7%A4%81%E7%9F%B3_%28259789669%29.jpeg",
+          "imgCredit": "Zhou Gang · CC BY 3.0 / Wikimedia Commons"
         },
         {
           "id": "d3-07",
@@ -371,7 +385,9 @@
           "travel": {
             "minutes": 60,
             "note": "車覽加路蘭、都蘭、都歷"
-          }
+          },
+          "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/2010_07_13420_6400_Chenggong_Chenggong_Fishing_Harbor_Taiwan.JPG/960px-2010_07_13420_6400_Chenggong_Chenggong_Fishing_Harbor_Taiwan.JPG",
+          "imgCredit": "Lord Koxinga · CC BY-SA 3.0 / Wikimedia Commons"
         },
         {
           "id": "d3-08",
@@ -382,7 +398,9 @@
           "intro": "由離岸小島與珊瑚礁海岸組成,相傳八仙中的呂洞賓、李鐵拐、何仙姑曾登臨而得名;八拱跨海步橋如長龍臥波,是東海岸最經典的地標,走到中段拍照折返約需一小時。",
           "travel": {
             "minutes": 15
-          }
+          },
+          "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/East_Coast_National_Scenic_Area%2C_Tourism_Administration_8.jpg/960px-East_Coast_National_Scenic_Area%2C_Tourism_Administration_8.jpg",
+          "imgCredit": "Tourism Administration, MOTC · Attribution / Wikimedia Commons"
         },
         {
           "id": "d3-10",
@@ -404,7 +422,9 @@
           "intro": "世界級的海蝕地形教室,大面積隆起的海蝕平台上有壺穴、海蝕溝與白色單面山;潮間帶生態豐富,岩面濕滑,拍照時留意浪況勿靠近浪區。",
           "travel": {
             "minutes": 80
-          }
+          },
+          "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Shitiping%2C_Taiwan_%28199183375%29.jpg/960px-Shitiping%2C_Taiwan_%28199183375%29.jpg",
+          "imgCredit": "Fabian Kurz · CC BY-SA 3.0 / Wikimedia Commons"
         },
         {
           "id": "d3-14",
@@ -426,7 +446,9 @@
           "intro": "花蓮最大的夜市聚落,匯集福町夜市、原住民一條街、各省一條街等四百多攤;炸彈蔥油餅、蔣家官財板、第一家烤肉串是排隊招牌,場地寬敞好逛。",
           "travel": {
             "minutes": 15
-          }
+          },
+          "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/41-%E8%8A%B1%E8%93%AE%E6%9D%B1%E5%A4%A7%E9%96%80%E5%A4%9C%E5%B8%82%EF%BC%8C%E6%9E%97%E8%A8%98%E7%87%92%E7%95%AA%E9%BA%A5_%2829518961025%29.jpg/960px-41-%E8%8A%B1%E8%93%AE%E6%9D%B1%E5%A4%A7%E9%96%80%E5%A4%9C%E5%B8%82%EF%BC%8C%E6%9E%97%E8%A8%98%E7%87%92%E7%95%AA%E9%BA%A5_%2829518961025%29.jpg",
+          "imgCredit": "Sinchen.Lin · CC BY 2.0 / Wikimedia Commons"
         }
       ],
       "restaurants": [
@@ -500,7 +522,9 @@
           "intro": "花蓮最知名的礫石海灣,月牙形海岸線一路延伸至清水斷崖,踏浪、聽浪淘石聲、撿石(記得放回)皆宜;此處海流強勁禁止下水游泳。",
           "travel": {
             "minutes": 20
-          }
+          },
+          "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/2004.02.01.%E4%B8%83%E6%98%9F%E6%BD%AD_-_panoramio.jpg/960px-2004.02.01.%E4%B8%83%E6%98%9F%E6%BD%AD_-_panoramio.jpg",
+          "imgCredit": "MickeyDisney · CC BY-SA 3.0 / Wikimedia Commons"
         },
         {
           "id": "d4-04",
@@ -511,7 +535,9 @@
           "intro": "台灣八景之一,斷崖自太平洋拔地而起高逾千米,海水呈現夢幻的漸層藍;崇德休憩區是最容易親近的展望點,停留 20 分鐘拍照剛好。",
           "travel": {
             "minutes": 30
-          }
+          },
+          "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Taiwan_2009_CingShui_Cliffs_on_SuHua_Highway_FRD_6762_Pano_Extracted.jpg/960px-Taiwan_2009_CingShui_Cliffs_on_SuHua_Highway_FRD_6762_Pano_Extracted.jpg",
+          "imgCredit": "Fred Hsu · CC BY-SA 3.0 / Wikimedia Commons"
         },
         {
           "id": "d4-06",
@@ -522,7 +548,9 @@
           "intro": "台泥於和平打造的開放式生態循環工廠園區,有星巴克、願景館與市集,洗手間乾淨,是蘇花公路上最舒適的功能性休息站。",
           "travel": {
             "minutes": 30
-          }
+          },
+          "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/%E4%BD%8D%E6%96%BC%E7%A7%80%E6%9E%97%E9%84%89%E5%92%8C%E5%B9%B3%E8%BB%8A%E7%AB%99%E6%97%81%E7%9A%84%E5%8F%B0%E6%B3%A5DAKA%E5%9C%92%E5%8D%80.JPG/960px-%E4%BD%8D%E6%96%BC%E7%A7%80%E6%9E%97%E9%84%89%E5%92%8C%E5%B9%B3%E8%BB%8A%E7%AB%99%E6%97%81%E7%9A%84%E5%8F%B0%E6%B3%A5DAKA%E5%9C%92%E5%8D%80.JPG",
+          "imgCredit": "雅婕 · CC BY-SA 4.0 / Wikimedia Commons"
         },
         {
           "id": "d4-08",
@@ -533,7 +561,9 @@
           "intro": "",
           "travel": {
             "minutes": 90
-          }
+          },
+          "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/%E5%8D%97%E6%96%B9%E6%BE%B3%E7%AC%AC%E4%B8%80%E6%BC%81%E6%B8%AF.jpg/960px-%E5%8D%97%E6%96%B9%E6%BE%B3%E7%AC%AC%E4%B8%80%E6%BC%81%E6%B8%AF.jpg",
+          "imgCredit": "創作者：莊文生;鐘碧娟;謝淑娟。貢獻者：宜蘭縣政府文化局 · CC BY 3.0 tw / Wikimedia Commons"
         },
         {
           "id": "d4-10",
@@ -544,7 +574,9 @@
           "intro": "礁溪溫泉是罕見的平地碳酸氫鈉泉,無色無味、潤滑不黏膩;湯圍溝溫泉公園有免費泡腳池,回程塞車前泡個腳舒緩最剛好。",
           "travel": {
             "minutes": 40
-          }
+          },
+          "img": "https://upload.wikimedia.org/wikipedia/commons/7/77/%E6%B9%AF%E5%9C%8D%E6%BA%9D%E5%85%AC%E5%9C%92.jpg",
+          "imgCredit": "宜蘭縣政府 · Attribution / Wikimedia Commons"
         },
         {
           "id": "d4-12",
@@ -588,6 +620,11 @@
     }
   ],
   "history": [
+    {
+      "ts": "2026-07-15T03:48:00.513Z",
+      "user": "系統",
+      "text": "為 16 個景點的介紹加上照片(Wikimedia Commons 免費授權,附攝影者署名)"
+    },
     {
       "ts": "2026-07-15T03:03:04.447Z",
       "user": "系統",

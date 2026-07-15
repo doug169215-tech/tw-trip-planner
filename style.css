@@ -263,6 +263,11 @@ main { max-width: 60rem; margin: 0 auto; padding: 1rem 1.2rem; }
   background: rgba(0, 45, 65, .28); border-radius: 10px; color: #fff;
 }
 .item-intro summary { cursor: pointer; color: #cdeef5; font-weight: 700; }
+.intro-img {
+  display: block; width: 100%; max-height: 260px; object-fit: cover;
+  border-radius: 10px; margin: .5em 0 .3em;
+}
+.intro-credit { font-size: .68rem; opacity: .75; margin-bottom: .4em; }
 .sortable-ghost { opacity: .4; }
 .sortable-drag { box-shadow: 0 12px 26px rgba(0, 30, 50, .4); }
 .sortable-fallback { opacity: .95; }

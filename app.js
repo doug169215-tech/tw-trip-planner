@@ -466,7 +466,7 @@ function renderItem(it) {
         <span class="item-wx" data-wxitem="${it.id}"></span>
       </div>
       ${it.note ? `<p class="item-note">${esc(it.note)}</p>` : ""}
-      ${it.intro ? `<details class="item-intro"><summary>景點介紹</summary>${esc(it.intro)}</details>` : ""}
+      ${it.intro || it.img ? `<details class="item-intro"><summary>景點介紹</summary>${it.img ? `<img class="intro-img" src="${esc(it.img)}" alt="${esc(it.title)}" loading="lazy" onerror="this.style.display='none'">${it.imgCredit ? `<div class="intro-credit">📷 ${esc(it.imgCredit)}</div>` : ""}` : ""}${esc(it.intro)}</details>` : ""}
     </div>
     <button class="edit-btn" data-id="${it.id}" title="編輯這個行程點">✏️</button>
   </div>`;
@@ -641,13 +641,15 @@ async function aiComplete(dayId, itemId) {
     const res = await fetch(tv.url, {
       method: "POST",
       headers: tv.headers,
-      body: JSON.stringify({ query: `台灣 ${it.title} 介紹 特色`, search_depth: "basic", include_answer: true, max_results: 3 }),
+      body: JSON.stringify({ query: `台灣 ${it.title} 介紹 特色`, search_depth: "basic", include_answer: true, include_images: true, max_results: 3 }),
     });
     if (res.ok) {
       const j = await res.json();
       let intro = await toTaiwanese(j.answer || "", ep); // 一律轉台灣繁體中文(簡體/英文都轉)
       [day, it] = findItem(); if (!it) return;
       if (intro && !it.intro) it.intro = intro;
+      const img = (j.images || []).find((u) => typeof u === "string" && /^https?:/.test(u));
+      if (img && !it.img) { it.img = img; it.imgCredit = "Tavily 搜尋結果,如不合適可在編輯視窗更換"; }
     }
   } catch {}
 
@@ -743,6 +745,7 @@ function openItemModal(dayId, itemId) {
   $("#item-type").value = it ? it.type : "spot";
   $("#item-note").value = it ? it.note : "";
   $("#item-intro").value = it ? it.intro : "";
+  $("#item-img").value = it ? (it.img || "") : "";
   // 出發錨點:只填出發時間、不可刪除
   const isAnchor = !!(it && it.anchor);
   $("#item-time-end").closest("label").classList.toggle("hidden", isAnchor);
@@ -762,6 +765,7 @@ function saveItem() {
     type: $("#item-type").value,
     note: $("#item-note").value.trim(),
     intro: $("#item-intro").value.trim(),
+    img: $("#item-img").value.trim(),
   };
   if (!vals.title) { toast("請填寫名稱"); return; }
 
@@ -773,6 +777,7 @@ function saveItem() {
     if (it.type !== vals.type) changes.push(`類型 ${TYPE_LABEL[it.type]} → ${TYPE_LABEL[vals.type]}`);
     if (it.note !== vals.note) changes.push("備註");
     if (it.intro !== vals.intro) changes.push("景點介紹");
+    if ((it.img || "") !== vals.img) { changes.push("圖片"); if (!vals.img || vals.img !== it.img) delete it.imgCredit; }
     Object.assign(it, vals);
     if (changes.length) commit(`修改 ${day.name}「${vals.title}」:${changes.join("、")}`);
   } else {
@@ -821,7 +826,7 @@ async function runAI() {
       const res = await fetch(ep.url, {
         method: "POST",
         headers: ep.headers,
-        body: JSON.stringify({ query: `台灣 ${title} 景點介紹 特色`, search_depth: "basic", include_answer: true, max_results: 3 }),
+        body: JSON.stringify({ query: `台灣 ${title} 景點介紹 特色`, search_depth: "basic", include_answer: true, include_images: true, max_results: 3 }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const j = await res.json();
@@ -831,6 +836,8 @@ async function runAI() {
         $("#item-intro").value = intro;
         parts.push("✅ 已取得景點介紹(Tavily)");
       } else parts.push("⚠️ Tavily 沒有回傳摘要");
+      const img = (j.images || []).find((u) => typeof u === "string" && /^https?:/.test(u));
+      if (img && !$("#item-img").value.trim()) { $("#item-img").value = img; parts.push("🖼️ 已帶入圖片(可在圖片網址欄更換)"); }
     } catch (e) {
       parts.push(`⚠️ Tavily 失敗:${e.message}`);
     }
