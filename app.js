@@ -343,20 +343,10 @@ function addRouteInfo(map, text) {
   c.addTo(map);
 }
 
-// 把「A → B → C」路線字串轉成 Google Maps 多點導航網址(在地圖上畫出當天路線)
-function routeDirUrl(route) {
-  const stops = String(route).split(/→|➜|->/).map((s) => s.trim()).filter(Boolean).map((s) => s + " 台灣");
-  if (stops.length < 2) return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(stops[0] || route);
-  const origin = encodeURIComponent(stops[0]);
-  const dest = encodeURIComponent(stops[stops.length - 1]);
-  const way = stops.slice(1, -1).map(encodeURIComponent).join("%7C");
-  return `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${dest}${way ? "&waypoints=" + way : ""}&travelmode=driving`;
-}
-
 function renderOverview() {
   const act = activeDay === "overview" ? "active" : "";
   const summaryRows = data.days.map((d) =>
-    `<tr><td><b>${esc(d.name.replace(/^Day\s*/, "D"))}</b><br><small>${esc(d.weekday)}</small></td><td>${esc(d.route)}<br><a class="route-link" href="${routeDirUrl(d.route)}" target="_blank" rel="noopener">🗺️ ${esc(d.name.replace(/^Day\s*/, "D"))} 路線圖</a></td><td>${lodgingHtml(d) || "—"}</td></tr>`
+    `<tr><td><b>${esc(d.name.replace(/^Day\s*/, "D"))}</b><br><small>${esc(d.weekday)}</small></td><td>${esc(d.route)}</td><td>${lodgingHtml(d) || "—"}</td></tr>`
   ).join("");
   return `
   <section class="day-panel ${act}" data-panel="overview">
