@@ -153,6 +153,18 @@ main { max-width: 60rem; margin: 0 auto; padding: 1rem 1.2rem; }
   font-variant-numeric: tabular-nums;
 }
 
+/* ── 攜帶物品清單 ── */
+.pack-note { font-size: .82rem; color: var(--ink-soft); margin: .2em 0 .6em; }
+.pack-cat {
+  font-weight: 800; font-size: .9rem; margin: .9em 0 .35em;
+  padding-bottom: .2em; border-bottom: 1px solid rgba(255, 255, 255, .3);
+}
+.pack-progress {
+  font-size: .72rem; font-weight: 800; margin-left: .6em;
+  background: rgba(255, 255, 255, .88); color: var(--sea);
+  border-radius: 999px; padding: .12em .65em; vertical-align: middle;
+}
+
 /* ── 出發日設定 ── */
 .startdate-row { font-size: .95rem; font-weight: 700; display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; }
 .startdate-row input[type="date"] {

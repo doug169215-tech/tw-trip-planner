@@ -229,13 +229,15 @@ function renderPanels() {
   const main = $("#main-content");
   main.innerHTML = renderOverview() + data.days.map(renderDay).join("");
 
-  // 綁定總覽 checklist
+  // 綁定總覽 checklist(行前確認+攜帶物品共用)
   main.querySelectorAll(".checklist-item input").forEach((cb) => {
     cb.onchange = () => {
-      const item = data.preTrip.find((p) => p.id === cb.dataset.id);
+      const isPacking = cb.dataset.list === "packing";
+      const list = isPacking ? (data.packing || []) : data.preTrip;
+      const item = list.find((p) => p.id === cb.dataset.id);
       if (!item) return;
       item.done = cb.checked;
-      commit(`${cb.checked ? "勾選" : "取消勾選"}行前確認:「${item.text.slice(0, 20)}…」`);
+      commit(`${cb.checked ? "勾選" : "取消勾選"}${isPacking ? "攜帶物品" : "行前確認"}:「${item.text.slice(0, 20)}…」`);
       renderPanels();
     };
   });
@@ -376,7 +378,34 @@ function renderOverview() {
           <span>${esc(p.text)}</span>
         </label>`).join("")}
     </div>
+    ${renderPacking()}
   </section>`;
+}
+
+// 攜帶物品清單(導遊建議):依 cat 分組渲染
+function renderPacking() {
+  const items = data.packing || [];
+  if (!items.length) return "";
+  const groups = [];
+  for (const it of items) {
+    let g = groups.find((x) => x.cat === it.cat);
+    if (!g) { g = { cat: it.cat, items: [] }; groups.push(g); }
+    g.items.push(it);
+  }
+  const doneCount = items.filter((i) => i.done).length;
+  return `
+  <div class="day-head">
+    <h2>🎒 攜帶物品清單(導遊建議)<small class="pack-progress">${doneCount}/${items.length}</small></h2>
+    <p class="pack-note">依本次路線(海岸地質景點+鹿野高台+蘇花)與 7/17-7/20 天氣預報(高溫 29-32°、午後雷陣雨機率高)整理。</p>
+    ${groups.map((g) => `
+      <p class="pack-cat">${esc(g.cat)}</p>
+      ${g.items.map((p) => `
+        <label class="checklist-item ${p.done ? "done" : ""}">
+          <input type="checkbox" data-id="${p.id}" data-list="packing" ${p.done ? "checked" : ""}>
+          <span>${esc(p.text)}</span>
+        </label>`).join("")}
+    `).join("")}
+  </div>`;
 }
 
 // 住宿文字,有 lodgingUrl 時包成 Google Maps 連結
