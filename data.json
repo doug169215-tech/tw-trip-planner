@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-15T11:59:20.505Z",
+  "updatedAt": "2026-07-15T11:59:24.022Z",
   "startDate": "2026-07-17",
   "title": "四天三夜|墾丁 · 台東 · 花蓮",
   "subtitle": "8 人自駕 · 新竹出發(週五-週一)",
@@ -108,6 +108,15 @@
           "imgCredit": "Aa7778273 · CC BY-SA 4.0 / Wikimedia Commons"
         },
         {
+          "id": "imrm11yuxsbct",
+          "time": "",
+          "title": "阿香綠豆蒜",
+          "type": "meal",
+          "note": "必點招牌綠豆蒜，停車方便",
+          "intro": "",
+          "aiPending": true
+        },
+        {
           "id": "d1-09",
           "time": "19:10-19:40",
           "title": "入住、放行李",
@@ -133,15 +142,6 @@
           "type": "stay",
           "note": "",
           "intro": ""
-        },
-        {
-          "id": "imrm11yuxsbct",
-          "time": "",
-          "title": "阿香綠豆蒜",
-          "type": "spot",
-          "note": "",
-          "intro": "",
-          "aiPending": true
         }
       ],
       "restaurants": [
@@ -1097,6 +1097,11 @@
     }
   ],
   "history": [
+    {
+      "ts": "2026-07-15T11:59:24.022Z",
+      "user": "狗狗",
+      "text": "調整「阿香綠豆蒜」在 Day 1 的順序(第 8 → 第 5)"
+    },
     {
       "ts": "2026-07-15T11:59:20.505Z",
       "user": "狗狗",
