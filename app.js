@@ -9,6 +9,7 @@ const TYPE_LABEL = { spot: "景點", meal: "餐食", transport: "車程", stay: 
 let data = null;          // 行程資料(含 history)
 let currentUser = null;
 const PROXY = "https://trip-ai-proxy.doug169215.workers.dev"; // 內建代理(AI+同步),金鑰保管在 Cloudflare Worker
+const DEEPSEEK_MODEL = "deepseek-v4-pro"; // 所有 AI 功能統一使用 DeepSeek Pro
 let dirty = false;        // 本機有未同步修改
 let activeDay = "overview";
 let editing = null;       // { dayId, itemId } 或 { dayId, itemId:null }(新增)
@@ -595,7 +596,7 @@ async function toTaiwanese(text, ep) {
       method: "POST",
       headers: ep.headers,
       body: JSON.stringify({
-        model: "deepseek-chat",
+        model: DEEPSEEK_MODEL,
         messages: [{ role: "user", content: `把以下景點介紹改寫成台灣慣用的繁體中文(用語、字形都要台灣化,例如「經濟/發展/台東」而非簡體),語氣自然通順,不要加標題或引號,只回傳結果:\n\n${text}` }],
         temperature: 0.2,
       }),
@@ -658,7 +659,7 @@ async function aiComplete(dayId, itemId) {
       method: "POST",
       headers: ep.headers,
       body: JSON.stringify({
-        model: "deepseek-chat",
+        model: DEEPSEEK_MODEL,
         messages: [{ role: "user", content: [
           `台灣旅遊行程助手。${day.name} 路線:${day.route}。新地點:「${it.title}」。`,
           `判斷:1) type 四選一:spot(景點)/meal(餐食)/stay(住宿或休息)/prep(加油、補給等整備)`,
@@ -733,7 +734,7 @@ async function aiRetime(dayId) {
       method: "POST",
       headers: ep.headers,
       body: JSON.stringify({
-        model: "deepseek-chat",
+        model: DEEPSEEK_MODEL,
         messages: [{ role: "user", content: prompt }],
         response_format: { type: "json_object" },
         temperature: 0.2,
@@ -901,7 +902,7 @@ async function runAI() {
         method: "POST",
         headers: ep.headers,
         body: JSON.stringify({
-          model: "deepseek-chat",
+          model: DEEPSEEK_MODEL,
           messages: [{ role: "user", content: prompt }],
           response_format: { type: "json_object" },
           temperature: 0.2,
