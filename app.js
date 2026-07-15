@@ -970,6 +970,12 @@ function tripStartDate() {
 }
 const localISO = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
+// 雨量顯示格式:>=10 取整數、<10 取一位小數;無資料回 null、0 回 0
+function fmtMm(v) {
+  if (v == null || isNaN(v)) return null;
+  return v >= 10 ? Math.round(v) : Math.round(v * 10) / 10;
+}
+
 async function fetchWeather(force) {
   if (!force && Date.now() - weather.fetchedAt < 30 * 60_000 && Object.keys(weather.points).length) return;
   try {
@@ -978,8 +984,8 @@ async function fetchWeather(force) {
     const pts = [...uniq.values()];
     const url = "https://api.open-meteo.com/v1/forecast"
       + `?latitude=${pts.map((p) => p[1]).join(",")}&longitude=${pts.map((p) => p[2]).join(",")}`
-      + "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max"
-      + "&hourly=weather_code,temperature_2m,precipitation_probability"
+      + "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum"
+      + "&hourly=weather_code,temperature_2m,precipitation_probability,precipitation"
       + "&timezone=Asia%2FTaipei&forecast_days=16";
     const res = await fetch(url);
     if (!res.ok) return;
@@ -1012,7 +1018,8 @@ function renderWeather() {
       const di = daily.time.indexOf(iso);
       if (di === -1) continue;
       const [icon, label] = wmoIcon(daily.weather_code[di]);
-      chips.push(`<span class="wx-chip" title="${esc(name)} ${label}">${esc(name)} ${icon} ${Math.round(daily.temperature_2m_max[di])}°/${Math.round(daily.temperature_2m_min[di])}° ☔${daily.precipitation_probability_max[di]}%</span>`);
+      const mm = fmtMm((daily.precipitation_sum || [])[di]);
+      chips.push(`<span class="wx-chip" title="${esc(name)} ${label},預估日雨量 ${mm ?? "?"}mm">${esc(name)} ${icon} ${Math.round(daily.temperature_2m_max[di])}°/${Math.round(daily.temperature_2m_min[di])}° ☔${daily.precipitation_probability_max[di]}%${mm != null ? ` 💧${mm}mm` : ""}</span>`);
     }
     if (chips.length) {
       row.innerHTML = `<span class="wx-date">🗓️ ${dateLabel}</span>` + chips.join("");
@@ -1044,8 +1051,9 @@ function renderItemWeather(start) {
       const hi = hourly.time.indexOf(`${iso}T${String(hour).padStart(2, "0")}:00`);
       if (hi === -1) continue;
       const [icon, label] = wmoIcon(hourly.weather_code[hi]);
-      el.innerHTML = `${icon} ${Math.round(hourly.temperature_2m[hi])}° ☔${hourly.precipitation_probability[hi]}%`;
-      el.title = `${place[0]} ${String(hour).padStart(2, "0")}:00 ${label},氣溫 ${Math.round(hourly.temperature_2m[hi])}°C,降雨機率 ${hourly.precipitation_probability[hi]}%`;
+      const hmm = fmtMm((hourly.precipitation || [])[hi]);
+      el.innerHTML = `${icon} ${Math.round(hourly.temperature_2m[hi])}° ☔${hourly.precipitation_probability[hi]}%${hmm ? ` 💧${hmm}mm` : ""}`;
+      el.title = `${place[0]} ${String(hour).padStart(2, "0")}:00 ${label},氣溫 ${Math.round(hourly.temperature_2m[hi])}°C,降雨機率 ${hourly.precipitation_probability[hi]}%,該小時預估雨量 ${hmm ?? 0}mm`;
     }
   });
 }
