@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-15T03:57:17.579Z",
+  "updatedAt": "2026-07-15T03:57:21.770Z",
   "startDate": "2026-07-17",
   "title": "四天三夜環島|海線主軸版",
   "subtitle": "8 人自駕 · 台11線海線為主 · 新竹出發(週五-週一)",
@@ -516,33 +516,33 @@
         },
         {
           "id": "d4-02",
-          "time": "09:00-10:00",
+          "time": "10:30-11:30",
           "title": "七星潭",
           "type": "spot",
           "note": "礫石海灘散步、拍照",
           "intro": "花蓮最知名的礫石海灣,月牙形海岸線一路延伸至清水斷崖,踏浪、聽浪淘石聲、撿石(記得放回)皆宜;此處海流強勁禁止下水游泳。",
           "travel": {
-            "minutes": 20
+            "minutes": 10
           },
           "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/2004.02.01.%E4%B8%83%E6%98%9F%E6%BD%AD_-_panoramio.jpg/960px-2004.02.01.%E4%B8%83%E6%98%9F%E6%BD%AD_-_panoramio.jpg",
           "imgCredit": "MickeyDisney · CC BY-SA 3.0 / Wikimedia Commons"
         },
         {
           "id": "d4-04",
-          "time": "10:30-10:50",
+          "time": "11:50-12:10",
           "title": "清水斷崖/崇德休憩區",
           "type": "spot",
           "note": "僅在開放且停車順利時",
           "intro": "台灣八景之一,斷崖自太平洋拔地而起高逾千米,海水呈現夢幻的漸層藍;崇德休憩區是最容易親近的展望點,停留 20 分鐘拍照剛好。",
           "travel": {
-            "minutes": 30
+            "minutes": 20
           },
           "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Taiwan_2009_CingShui_Cliffs_on_SuHua_Highway_FRD_6762_Pano_Extracted.jpg/960px-Taiwan_2009_CingShui_Cliffs_on_SuHua_Highway_FRD_6762_Pano_Extracted.jpg",
           "imgCredit": "Fred Hsu · CC BY-SA 3.0 / Wikimedia Commons"
         },
         {
           "id": "d4-06",
-          "time": "11:20-11:50",
+          "time": "12:40-13:10",
           "title": "台泥 DAKA 園區",
           "type": "stay",
           "note": "洗手間、咖啡、補水;釋放山路壓力",
@@ -555,39 +555,39 @@
         },
         {
           "id": "d4-08",
-          "time": "13:20-14:20",
+          "time": "13:40-14:40",
           "title": "南方澳午餐",
           "type": "meal",
           "note": "餐廳首選/備案見下方推薦",
           "intro": "",
           "travel": {
-            "minutes": 90
+            "minutes": 30
           },
           "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/%E5%8D%97%E6%96%B9%E6%BE%B3%E7%AC%AC%E4%B8%80%E6%BC%81%E6%B8%AF.jpg/960px-%E5%8D%97%E6%96%B9%E6%BE%B3%E7%AC%AC%E4%B8%80%E6%BC%81%E6%B8%AF.jpg",
           "imgCredit": "創作者：莊文生;鐘碧娟;謝淑娟。貢獻者：宜蘭縣政府文化局 · CC BY 3.0 tw / Wikimedia Commons"
         },
         {
           "id": "d4-10",
-          "time": "15:00-15:35",
+          "time": "15:10-15:45",
           "title": "礁溪泡腳/咖啡",
           "type": "spot",
           "note": "",
           "intro": "礁溪溫泉是罕見的平地碳酸氫鈉泉,無色無味、潤滑不黏膩;湯圍溝溫泉公園有免費泡腳池,回程塞車前泡個腳舒緩最剛好。",
           "travel": {
-            "minutes": 40
+            "minutes": 30
           },
           "img": "https://upload.wikimedia.org/wikipedia/commons/7/77/%E6%B9%AF%E5%9C%8D%E6%BA%9D%E5%85%AC%E5%9C%92.jpg",
           "imgCredit": "宜蘭縣政府 · Attribution / Wikimedia Commons"
         },
         {
           "id": "d4-12",
-          "time": "18:00-19:00",
+          "time": "18:15",
           "title": "抵達新竹",
           "type": "stay",
           "note": "視國5車流調整",
           "intro": "",
           "travel": {
-            "minutes": 145,
+            "minutes": 150,
             "note": "國5 接國3"
           }
         }
@@ -621,6 +621,11 @@
     }
   ],
   "history": [
+    {
+      "ts": "2026-07-15T03:57:21.770Z",
+      "user": "狗狗",
+      "text": "AI 重排 Day 4 時間與車程(更新 12 處)"
+    },
     {
       "ts": "2026-07-15T03:57:17.579Z",
       "user": "狗狗",
