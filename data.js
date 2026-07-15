@@ -1,7 +1,7 @@
 // 預設行程資料(離線備援;線上以 data.json 為準)
 window.DEFAULT_DATA = {
   "version": 1,
-  "updatedAt": "2026-07-15T03:48:00.513Z",
+  "updatedAt": "2026-07-15T04:07:29.938Z",
   "startDate": "2026-07-17",
   "title": "四天三夜環島|海線主軸版",
   "subtitle": "8 人自駕 · 台11線海線為主 · 新竹出發(週五-週一)",
@@ -171,6 +171,11 @@ window.DEFAULT_DATA = {
       "timeControls": [
         "13:30 後才到台南:西市場與國華街只留午餐,最晚 15:30 離開。",
         "15:30 還未離開台南:取消枋野秘境,改愛琴海岸或直接前往恆春。"
+      ],
+      "rainPlan": [
+        "台南遇雨(降雨 95% 但量小):西市場本館與國華街騎樓可避雨,照常走;雨勢大改林百貨+美術館二館室內散策(車程 5 分),15:15 準時離開不變。",
+        "枋野秘境遇雨:改愛琴海岸海景咖啡(有室內座),或直接進恆春提早晚餐(阿利海產、迪迪皆為室內)。",
+        "恆春晚間陣雨(96%):晚餐後墾丁大街縮短或取消,回 Villa 休息;海景照片留到隔天早上補拍。"
       ]
     },
     {
@@ -315,6 +320,12 @@ window.DEFAULT_DATA = {
       "timeControls": [
         "14:30 還在台東市區:取消市區短逛,直接前往鹿野。",
         "若為週二或天候不宜展球:鹿野高台改看景/市集,晚上增加鐵花與晚餐時間。"
+      ],
+      "rainPlan": [
+        "展球與否以官方為準:出發前與 15:00 各查一次官方 FB;午後雷陣雨(鹿野 100% 但雨量僅約 3mm)常見「延後展球」而非取消,先卡位不要太早撤。",
+        "下午場確定取消:高台快閃拍照 30 分即撤,回台東市改國立臺灣史前文化博物館(室內,週六開館),並提早鐵花村晚餐與夜逛。",
+        "終極補償方案:若 7/18 整天不宜展球,7/19 清晨 05:00 出發看 05:30 上午場(晨間風況較穩定),看完回市區早餐,Day 3 行程順延約 1.5 小時、金剛大道改車覽。",
+        "雨中駕駛提醒:高台聯外道路窄,散場遇雨更塞;已預留的 50 分車程勿再壓縮。"
       ]
     },
     {
@@ -491,6 +502,12 @@ window.DEFAULT_DATA = {
       "timeControls": [
         "13:30 還在成功漁港:金剛大道縮至 15 分鐘,取消所有備選點。",
         "16:30 才離開三仙台:金剛大道快拍後直奔石梯坪;石門洞、新社梯田、芭崎全數車覽。"
+      ],
+      "rainPlan": [
+        "安全紅線:雨中或雨後海蝕岩濕滑,小野柳、三仙台、石梯坪一律只走步道與觀景平台,不下海蝕平台與消波區。",
+        "成功一帶雨大(100%/約 7mm):三仙台改走到橋頭拍照即返;室內備案:都歷遊客中心(展示館+看海)或比西里岸部落。",
+        "石梯坪雨大:觀景台快拍 15 分,提早約 1 小時進花蓮;室內備案:花蓮鐵道文化園區,或提早耕壽司晚餐。",
+        "金剛大道雨天不下車,車上隔窗拍山嵐版即可,不影響後續時程。"
       ]
     },
     {
@@ -512,82 +529,83 @@ window.DEFAULT_DATA = {
           "type": "prep",
           "note": "",
           "intro": "",
-          "anchor": true
+          "anchor": true,
+          "img": ""
         },
         {
           "id": "d4-02",
-          "time": "09:00-10:00",
+          "time": "08:30-09:30",
           "title": "七星潭",
           "type": "spot",
           "note": "礫石海灘散步、拍照",
           "intro": "花蓮最知名的礫石海灣,月牙形海岸線一路延伸至清水斷崖,踏浪、聽浪淘石聲、撿石(記得放回)皆宜;此處海流強勁禁止下水游泳。",
           "travel": {
-            "minutes": 20
+            "minutes": 10
           },
           "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/2004.02.01.%E4%B8%83%E6%98%9F%E6%BD%AD_-_panoramio.jpg/960px-2004.02.01.%E4%B8%83%E6%98%9F%E6%BD%AD_-_panoramio.jpg",
           "imgCredit": "MickeyDisney · CC BY-SA 3.0 / Wikimedia Commons"
         },
         {
           "id": "d4-04",
-          "time": "10:30-10:50",
+          "time": "09:50-10:10",
           "title": "清水斷崖/崇德休憩區",
           "type": "spot",
           "note": "僅在開放且停車順利時",
           "intro": "台灣八景之一,斷崖自太平洋拔地而起高逾千米,海水呈現夢幻的漸層藍;崇德休憩區是最容易親近的展望點,停留 20 分鐘拍照剛好。",
           "travel": {
-            "minutes": 30
+            "minutes": 20
           },
           "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Taiwan_2009_CingShui_Cliffs_on_SuHua_Highway_FRD_6762_Pano_Extracted.jpg/960px-Taiwan_2009_CingShui_Cliffs_on_SuHua_Highway_FRD_6762_Pano_Extracted.jpg",
           "imgCredit": "Fred Hsu · CC BY-SA 3.0 / Wikimedia Commons"
         },
         {
           "id": "d4-06",
-          "time": "11:20-11:50",
+          "time": "10:30-11:00",
           "title": "台泥 DAKA 園區",
           "type": "stay",
           "note": "洗手間、咖啡、補水;釋放山路壓力",
           "intro": "台泥於和平打造的開放式生態循環工廠園區,有星巴克、願景館與市集,洗手間乾淨,是蘇花公路上最舒適的功能性休息站。",
           "travel": {
-            "minutes": 30
+            "minutes": 20
           },
           "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/%E4%BD%8D%E6%96%BC%E7%A7%80%E6%9E%97%E9%84%89%E5%92%8C%E5%B9%B3%E8%BB%8A%E7%AB%99%E6%97%81%E7%9A%84%E5%8F%B0%E6%B3%A5DAKA%E5%9C%92%E5%8D%80.JPG/960px-%E4%BD%8D%E6%96%BC%E7%A7%80%E6%9E%97%E9%84%89%E5%92%8C%E5%B9%B3%E8%BB%8A%E7%AB%99%E6%97%81%E7%9A%84%E5%8F%B0%E6%B3%A5DAKA%E5%9C%92%E5%8D%80.JPG",
           "imgCredit": "雅婕 · CC BY-SA 4.0 / Wikimedia Commons"
         },
         {
           "id": "d4-08",
-          "time": "13:20-14:20",
+          "time": "11:30-12:30",
           "title": "南方澳午餐",
           "type": "meal",
           "note": "餐廳首選/備案見下方推薦",
           "intro": "",
           "travel": {
-            "minutes": 90
+            "minutes": 30
           },
           "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/%E5%8D%97%E6%96%B9%E6%BE%B3%E7%AC%AC%E4%B8%80%E6%BC%81%E6%B8%AF.jpg/960px-%E5%8D%97%E6%96%B9%E6%BE%B3%E7%AC%AC%E4%B8%80%E6%BC%81%E6%B8%AF.jpg",
           "imgCredit": "創作者：莊文生;鐘碧娟;謝淑娟。貢獻者：宜蘭縣政府文化局 · CC BY 3.0 tw / Wikimedia Commons"
         },
         {
           "id": "d4-10",
-          "time": "15:00-15:35",
+          "time": "13:00-13:35",
           "title": "礁溪泡腳/咖啡",
           "type": "spot",
           "note": "",
           "intro": "礁溪溫泉是罕見的平地碳酸氫鈉泉,無色無味、潤滑不黏膩;湯圍溝溫泉公園有免費泡腳池,回程塞車前泡個腳舒緩最剛好。",
           "travel": {
-            "minutes": 40
+            "minutes": 30
           },
           "img": "https://upload.wikimedia.org/wikipedia/commons/7/77/%E6%B9%AF%E5%9C%8D%E6%BA%9D%E5%85%AC%E5%9C%92.jpg",
           "imgCredit": "宜蘭縣政府 · Attribution / Wikimedia Commons"
         },
         {
           "id": "d4-12",
-          "time": "18:00-19:00",
+          "time": "16:05",
           "title": "抵達新竹",
           "type": "stay",
           "note": "視國5車流調整",
           "intro": "",
           "travel": {
-            "minutes": 145,
+            "minutes": 150,
             "note": "國5 接國3"
           }
         }
@@ -617,10 +635,41 @@ window.DEFAULT_DATA = {
       "timeControls": [
         "蘇花有雨勢、落石警戒或管制:七星潭後直接北上;清水斷崖視現況取消,DAKA 僅保留功能性休息。",
         "國5北返嚴重壅塞:取消礁溪泡腳,改坪林服務區短休並盡早接國3。"
+      ],
+      "rainPlan": [
+        "蘇花雨天鐵則(優先於一切):雨勢大、落石警戒或管制 → 七星潭後直接北上,清水斷崖取消,DAKA 只做洗手間補給。",
+        "七星潭遇雨:縮為 30 分堤上看海,或直接改佳興冰果室外帶檸檬汁提早出發(蘇澳全日 100%/10mm,早走早安心)。",
+        "南方澳雨大:午餐首選改番割田甕缸雞(交流道旁好停車、全室內),略過觀景台與粉鳥林。",
+        "礁溪遇雨:湯圍溝泡腳池有遮棚照常;雨勢太大改直接回程,坪林服務區短休。"
       ]
     }
   ],
   "history": [
+    {
+      "ts": "2026-07-15T04:07:29.938Z",
+      "user": "系統",
+      "text": "各天新增「☔ 雨天備案」區塊:依 7/17-7/20 最新降雨預報逐日撰寫(共 15 條)"
+    },
+    {
+      "ts": "2026-07-15T03:57:45.593Z",
+      "user": "狗狗",
+      "text": "AI 重排 Day 4 時間與車程(更新 8 處)"
+    },
+    {
+      "ts": "2026-07-15T03:57:39.892Z",
+      "user": "狗狗",
+      "text": "修改 Day 4「早餐、退房」:時間 10:00 → 08:00"
+    },
+    {
+      "ts": "2026-07-15T03:57:21.770Z",
+      "user": "狗狗",
+      "text": "AI 重排 Day 4 時間與車程(更新 12 處)"
+    },
+    {
+      "ts": "2026-07-15T03:57:17.579Z",
+      "user": "狗狗",
+      "text": "修改 Day 4「早餐、退房」:時間 08:00 → 10:00"
+    },
     {
       "ts": "2026-07-15T03:48:00.513Z",
       "user": "系統",

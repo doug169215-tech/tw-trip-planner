@@ -436,6 +436,7 @@ function renderDay(day) {
       ${renderRestaurants(day)}
       ${renderList("🧭 沿途備選", day.alternates)}
       ${renderList("⏱️ 時間控制", day.timeControls)}
+      ${renderList("☔ 雨天備案(依 7/17-7/20 預報)", day.rainPlan)}
     </div>
   </section>`;
 }
