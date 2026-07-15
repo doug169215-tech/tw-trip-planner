@@ -320,6 +320,16 @@ main { max-width: 60rem; margin: 0 auto; padding: 1rem 1.2rem; }
 .tag-first { background: rgba(255, 255, 255, .9); color: #2c7a4b; }
 .tag-backup { background: rgba(255, 255, 255, .9); color: var(--sun); }
 
+/* 在地推薦名單(店名+營業時間+介紹) */
+.rec-note { margin: 0 0 .5em; font-size: .78rem; color: var(--ink-soft); }
+.rec-list { list-style: none; padding-left: 0 !important; }
+.rec-item { margin-bottom: .7em; padding-bottom: .55em; border-bottom: 1px solid rgba(255, 255, 255, .18); }
+.rec-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.rec-head { display: flex; align-items: center; gap: .4em; flex-wrap: wrap; }
+.rec-cat { font-size: .68rem; font-weight: 800; background: rgba(255, 255, 255, .85); color: var(--sea); border-radius: 999px; padding: .05em .55em; }
+.rec-hours { font-size: .78rem; color: #eaf7fb; margin-top: .12em; font-variant-numeric: tabular-nums; }
+.rec-intro { font-size: .82rem; color: var(--ink-soft); margin-top: .12em; }
+
 /* ── 總覽 ── */
 .overview-principles { margin: 0 0 1rem; }
 .checklist-item { display: flex; gap: .5rem; align-items: flex-start; margin-bottom: .4em; cursor: pointer; }

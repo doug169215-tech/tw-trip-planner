@@ -516,6 +516,7 @@ function renderDay(day) {
       ${renderList("🧭 沿途備選", day.alternates)}
       ${renderList("⏱️ 時間控制", day.timeControls)}
       ${renderList("☔ 雨天備案(依 7/17-7/20 預報)", day.rainPlan)}
+      ${renderRecommend(day)}
     </div>
   </section>`;
 }
@@ -577,6 +578,22 @@ function renderRestaurants(day) {
 function renderList(title, arr) {
   if (!arr || !arr.length) return "";
   return `<div class="extra-block"><h3>${title}</h3><ul>${arr.map((a) => `<li>${esc(a)}</li>`).join("")}</ul></div>`;
+}
+
+// 當天推薦名單(每家:店名 + 營業時間 + 介紹 + Google Maps 連結),放在當天最下方
+function renderRecommend(day) {
+  const rec = day.recommend;
+  if (!rec || !rec.list || !rec.list.length) return "";
+  const rows = rec.list.map((r) => {
+    const region = (matchPlace(day.route || "") || [""])[0];
+    const url = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(r.name + " " + (r.area || region));
+    return `<li class="rec-item">
+      <div class="rec-head"><b>${esc(r.name)}</b>${r.cat ? `<span class="rec-cat">${esc(r.cat)}</span>` : ""}<a class="map-link" href="${url}" target="_blank" rel="noopener" title="在 Google Maps 搜尋「${esc(r.name)}」">📍</a></div>
+      ${r.hours ? `<div class="rec-hours">🕒 ${esc(r.hours)}</div>` : ""}
+      ${r.intro ? `<div class="rec-intro">${esc(r.intro)}</div>` : ""}
+    </li>`;
+  }).join("");
+  return `<div class="extra-block"><h3>${esc(rec.title || "🍡 在地推薦")}</h3>${rec.note ? `<p class="rec-note">${esc(rec.note)}</p>` : ""}<ul class="rec-list">${rows}</ul></div>`;
 }
 
 // ─── 拖曳 ─────────────────────────────────────────────────────
