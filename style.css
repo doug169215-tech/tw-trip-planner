@@ -39,6 +39,7 @@ body {
 }
 .btn:hover { filter: brightness(1.08); }
 .btn:active { transform: scale(.97); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
 .btn-primary {
   background: rgba(255, 255, 255, .95); border-color: transparent;
   color: var(--sea); font-weight: 800;

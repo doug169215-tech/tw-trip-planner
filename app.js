@@ -16,6 +16,8 @@ let aiFill = null;        // AI 辨識結果暫存
 let sortables = [];
 let syncTimer = null;     // 自動上傳的 debounce 計時器
 let syncing = false;
+let undoStack = [];       // 復原快照(僅本次瀏覽階段、僅自己的修改,最多 20 步)
+let lastSnapshot = null;  // 上一次穩定狀態的深拷貝
 const proxyUrl = (p) => PROXY + p;
 
 const $ = (sel) => document.querySelector(sel);
@@ -64,6 +66,7 @@ async function loadData() {
   }
   migrateTransports(data); // 舊版車程卡(如果還有)折疊為停靠點的 travel 資訊
   normalizeAnchors(data);  // 每天第一張標記為出發錨點
+  lastSnapshot = structuredClone(data); // 復原功能的基準快照
 }
 
 // 每天第一個行程點=出發錨點(固定第一、不可拖曳/刪除、只有出發時間);其餘清除標記
@@ -121,12 +124,46 @@ function migrateTransports(d) {
 
 // ─── 修改與紀錄 ───────────────────────────────────────────────
 function commit(text) {
+  // 存「修改前」的快照供復原(lastSnapshot 是上一次穩定狀態)
+  if (lastSnapshot) {
+    undoStack.push({ snap: lastSnapshot, label: text });
+    if (undoStack.length > 20) undoStack.shift();
+  }
   data.updatedAt = new Date().toISOString();
   data.history.unshift({ ts: data.updatedAt, user: currentUser || "訪客", text });
   if (data.history.length > 300) data.history.length = 300;
+  lastSnapshot = structuredClone(data);
   dirty = true;
   localStorage.setItem(LS.data, JSON.stringify(data));
+  updateUndoBtn();
   scheduleSync();
+}
+
+// ─── 復原(Undo) ─────────────────────────────────────────────
+function undo() {
+  const step = undoStack.pop();
+  if (!step) { toast("沒有可復原的修改"); return; }
+  data = step.snap;
+  normalizeAnchors(data);
+  data.updatedAt = new Date().toISOString();
+  data.history.unshift({ ts: data.updatedAt, user: currentUser || "訪客", text: `↩️ 復原:${step.label}` });
+  if (data.history.length > 300) data.history.length = 300;
+  lastSnapshot = structuredClone(data);
+  dirty = true;
+  localStorage.setItem(LS.data, JSON.stringify(data));
+  renderAll();
+  updateUndoBtn();
+  scheduleSync();
+  toast(`↩️ 已復原:${step.label.slice(0, 30)}`);
+}
+
+function updateUndoBtn() {
+  const b = $("#btn-undo");
+  if (!b) return;
+  b.disabled = !undoStack.length;
+  b.title = undoStack.length
+    ? `復原上一步:${undoStack[undoStack.length - 1].label.slice(0, 40)}(還可復原 ${undoStack.length} 步)`
+    : "沒有可復原的修改(只能復原自己這次開頁後的修改)";
 }
 
 // ─── 自動同步 ─────────────────────────────────────────────────
@@ -172,6 +209,10 @@ async function pollRemote() {
       data = remote;
       migrateTransports(data); // 團員舊版資料若含車程卡,在本機即時折疊(不回寫)
       normalizeAnchors(data);
+      // 基準換成團員的新版本,清空舊快照(避免復原時把別人的修改一起退掉)
+      undoStack = [];
+      lastSnapshot = structuredClone(data);
+      updateUndoBtn();
       localStorage.setItem(LS.data, JSON.stringify(data));
       renderAll();
       setSyncStatus("⬇️ 已載入團員的最新修改", false);
@@ -1091,6 +1132,7 @@ function bindGlobalEvents() {
   $("#login-name").addEventListener("keydown", (e) => { if (e.key === "Enter") doLogin(); });
   $("#btn-user").onclick = showLogin;
   $("#btn-history").onclick = openHistory;
+  $("#btn-undo").onclick = undo;
 
   $("#item-save").onclick = saveItem;
   $("#item-cancel").onclick = () => $("#item-modal").classList.add("hidden");
