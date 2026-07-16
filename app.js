@@ -1293,7 +1293,7 @@ async function sendChat() {
       "以下是「最新」行程與天氣資料(以此為準,不要編造不存在的行程):",
       tripDigest(),
       `今天日期:${new Date().toLocaleDateString("zh-TW", { month: "long", day: "numeric", weekday: "long" })}。發問的團員:${currentUser || "團員"}。`,
-      "回答規則:台灣慣用繁體中文;引用行程一律用具體時刻;建議要可執行(講清楚幾點、去哪、怎麼做);與行程無關的問題也可簡潔回答;預設 150 字內,團員要求詳細時再展開。",
+      "回答規則:台灣慣用繁體中文;引用行程一律用具體時刻;建議要可執行(講清楚幾點、去哪、怎麼做);與行程無關的問題也可簡潔回答;預設 150 字內,團員要求詳細時再展開;純文字回覆,不要使用 Markdown 符號(如 ** 或 #)。",
     ].join("\n");
     const ep = aiEndpoint("deepseek");
     const res = await fetch(ep.url, {
