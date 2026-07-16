@@ -285,6 +285,7 @@ main { max-width: 60rem; margin: 0 auto; padding: 1rem 1.2rem; }
 .item-intro {
   font-size: .82rem; margin: .35em 0 0; padding: .45em .7em;
   background: rgba(0, 45, 65, .28); border-radius: 10px; color: #fff;
+  white-space: pre-line; /* 介紹文字支援換行分段 */
 }
 .item-intro summary { cursor: pointer; color: #cdeef5; font-weight: 700; }
 .intro-img {
