@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-16T03:23:12.802Z",
+  "updatedAt": "2026-07-16T03:23:18.063Z",
   "startDate": "2026-07-17",
   "title": "四天三夜|墾丁 · 台東 · 花蓮",
   "subtitle": "8 人自駕 · 新竹出發(週五-週一)",
@@ -597,25 +597,25 @@
           "note": "餐廳首選/備案見下方推薦",
           "intro": "",
           "travel": {
-            "minutes": 150,
+            "minutes": 120,
             "note": "台26 → 台9 南迴公路"
           }
         },
         {
           "id": "imrmy0trw5bd6",
-          "time": "13:05-13:05",
+          "time": "13:00-13:00",
           "title": "鹿野高台P2停車場",
           "type": "prep",
           "note": "離高台最近，假日易滿",
           "intro": "鹿野高台以絕佳的視野和熱氣球活動聞名，是台灣東部熱門的觀光勝地，總能吸引大量遊客前來。每年六月到八月是熱氣球活動最熱鬧的時候。鹿野高台周邊還有多處知名景點，像是加路蘭遊憩區和龍田村。",
           "img": "https://instagram.frmq9-1.fna.fbcdn.net/v/t51.82787-15/731479023_17945366448237837_2444245967327458273_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=106&ig_cache_key=MzkzMjA5OTE0MDIzOTA3NjYwOA%3D%3D.3-ccb7-5&ccb=7-5&_nc_sid=58cdad&efg=eyJ2ZW5jb2RlX3RhZyI6IkZFRUQueHBpZHMuMTI4MC5zZHIucmVndWxhcl9waG90by5DMyJ9&_nc_ohc=_RdelX11wg8Q7kNvwHzdMXu&_nc_oc=AdphgJcxsDVjppOE2hI9vkelL2EqFyRYM_2YT0M92KMH6zL6rvG9rLk78dmYxF6Rs2c&_nc_ad=z-m&_nc_cid=0&_nc_zt=23&_nc_ht=instagram.frmq9-1.fna&_nc_gid=FttAAPPKrs5Vnlf37GFw1A&_nc_ss=7a22e&oh=00_AQAJeGnyRRbzIfAiQO1UhwgmYgh3iV3WAJHR6mn-CfxJCg&oe=6A5E07C4",
           "travel": {
-            "minutes": 35
+            "minutes": 30
           }
         },
         {
           "id": "d2-07",
-          "time": "13:05-15:40",
+          "time": "13:00-15:35",
           "title": "鹿野高台",
           "type": "spot",
           "note": "停車、市集、拍照、找觀賞位置",
@@ -628,7 +628,7 @@
         },
         {
           "id": "d2-08",
-          "time": "15:40-17:10",
+          "time": "15:35-17:05",
           "title": "吉伊卡哇熱氣球下午場",
           "type": "spot",
           "note": "官方下午場 17:00-18:30(已確認 7/18 週六照常、非公休日);提早佔位",
@@ -641,25 +641,25 @@
         },
         {
           "id": "d2-10",
-          "time": "17:45-19:10",
+          "time": "17:35-19:00",
           "title": "台東晚餐+鐵花新聚落夜逛",
           "type": "meal",
           "note": "",
           "intro": "",
           "travel": {
-            "minutes": 35,
+            "minutes": 30,
             "note": "鹿野 → 台東市區;熱氣球散場車多,已預留緩衝"
           }
         },
         {
           "id": "d2-11",
-          "time": "19:10",
+          "time": "19:15",
           "title": "入住民宿、休息",
           "type": "stay",
           "note": "",
           "intro": "",
           "travel": {
-            "minutes": 10
+            "minutes": 15
           }
         }
       ],
@@ -1434,6 +1434,11 @@
     }
   ],
   "history": [
+    {
+      "ts": "2026-07-16T03:23:18.063Z",
+      "user": "狗狗",
+      "text": "AI 重排 Day 2 時間與車程(更新 10 處)"
+    },
     {
       "ts": "2026-07-16T03:23:12.802Z",
       "user": "狗狗",
