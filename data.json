@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-16T06:20:46.862Z",
+  "updatedAt": "2026-07-16T06:23:00.905Z",
   "startDate": "2026-07-17",
   "title": "四天三夜|墾丁 · 台東 · 花蓮",
   "subtitle": "8 人自駕 · 新竹出發(週五-週一)",
@@ -897,7 +897,8 @@
           "intro": "長濱鄉一條筆直朝太平洋延伸的產業道路,正式名稱為長光大道;兩側稻田隨季節由翠綠轉金黃,山、田、海同框的畫面是攝影熱點,路窄請靠邊停車快拍。",
           "travel": {
             "minutes": 35
-          }
+          },
+          "img": "https://lh3.googleusercontent.com/gps-cs-s/AHRPTWl5eoUFCx12lAwPrFXKXfEbUoSURUxgdMSqN2ID-PfCUMTqTdTrF7f3nBVYdeh-Z8ynlxrl765wDwJz4qWz1X6KeFQnqIt0WtV_leCuygokVuhnBd15uq7DHgKvUnF5Mp_JnzGE=s680-w680-h510-rw"
         },
         {
           "id": "d3-12",
@@ -1460,6 +1461,11 @@
     }
   ],
   "history": [
+    {
+      "ts": "2026-07-16T06:23:00.905Z",
+      "user": "狗狗",
+      "text": "修改 Day 3「金剛大道」:圖片"
+    },
     {
       "ts": "2026-07-16T06:20:46.862Z",
       "user": "狗狗",
