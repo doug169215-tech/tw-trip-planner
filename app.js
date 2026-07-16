@@ -1236,6 +1236,7 @@ function renderItemWeather(start) {
 let chatLog = [];
 try { chatLog = JSON.parse(localStorage.getItem("ttp.chat") || "[]"); } catch {}
 let chatBusy = false;
+let chatPhase = "";   // 目前進行中的階段文字(查資料/思考)
 
 // 給導遊的行程+天氣摘要(每次發問即時產生,永遠是最新狀態)
 function tripDigest() {
@@ -1275,7 +1276,7 @@ function renderChat() {
   const welcome = chatLog.length ? "" : `<div class="chat-msg guide">你好${currentUser ? "," + esc(currentUser) : ""}!我是你們這趟的 AI 導遊 🧭 行程、天氣、雨天備案、在地美食都可以問我。例如:「Day 2 幾點要出發?」「三仙台下雨怎麼辦?」</div>`;
   box.innerHTML = welcome
     + chatLog.map((m) => `<div class="chat-msg ${m.role === "user" ? "me" : "guide"}">${esc(m.content)}</div>`).join("")
-    + (chatBusy ? `<div class="chat-msg guide typing">🧭 導遊思考中…</div>` : "");
+    + (chatBusy ? `<div class="chat-msg guide typing">${esc(chatPhase || "🧭 導遊思考中…")}</div>` : "");
   box.scrollTop = box.scrollHeight;
 }
 
@@ -1286,14 +1287,39 @@ async function sendChat() {
   chatLog.push({ role: "user", content: text });
   input.value = "";
   chatBusy = true;
+  chatPhase = "🔎 導遊聯網查資料中…";
+  renderChat();
+
+  // 每次詢問都先聯網搜尋(Tavily),把即時結果交給導遊
+  let webCtx = "";
+  try {
+    const tv = aiEndpoint("tavily");
+    const r = await fetch(tv.url, {
+      method: "POST",
+      headers: tv.headers,
+      body: JSON.stringify({ query: text, search_depth: "basic", include_answer: true, max_results: 5 }),
+    });
+    if (r.ok) {
+      const jj = await r.json();
+      const items = (jj.results || []).slice(0, 5)
+        .map((x, i) => `${i + 1}. ${x.title}〔${x.url}〕:${String(x.content || "").replace(/\s+/g, " ").slice(0, 160)}`)
+        .join("\n");
+      if (jj.answer || items) {
+        webCtx = `【即時網路搜尋結果(搜尋於 ${new Date().toLocaleString("zh-TW", { hour12: false })})】\n${jj.answer ? "搜尋摘要:" + jj.answer + "\n" : ""}${items}`;
+      }
+    }
+  } catch {}
+
+  chatPhase = "🧭 導遊思考中…";
   renderChat();
   try {
     const sys = [
       "你是這趟四天三夜(墾丁·台東·花蓮)旅程的隨團專業導遊,帶團 20 年,親切、務實、有話直說。",
       "以下是「最新」行程與天氣資料(以此為準,不要編造不存在的行程):",
       tripDigest(),
+      webCtx || "【本次無網路搜尋結果】",
       `今天日期:${new Date().toLocaleDateString("zh-TW", { month: "long", day: "numeric", weekday: "long" })}。發問的團員:${currentUser || "團員"}。`,
-      "回答規則:台灣慣用繁體中文;引用行程一律用具體時刻;建議要可執行(講清楚幾點、去哪、怎麼做);與行程無關的問題也可簡潔回答;預設 150 字內,團員要求詳細時再展開;純文字回覆,不要使用 Markdown 符號(如 ** 或 #)。",
+      "回答規則:台灣慣用繁體中文;行程問題以行程資料為準;需要即時資訊(路況、營業時間、公告、票價、新聞)時引用上方搜尋結果,並在句末以〔網址〕附上來源;搜尋結果與問題無關時直接忽略,不要提及;引用行程一律用具體時刻;建議要可執行;預設 150 字內,團員要求詳細再展開;純文字回覆,不要使用 Markdown 符號(如 ** 或 #)。",
     ].join("\n");
     const ep = aiEndpoint("deepseek");
     const res = await fetch(ep.url, {
