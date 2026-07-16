@@ -1232,6 +1232,95 @@ function renderItemWeather(start) {
   });
 }
 
+// ─── AI 導遊聊天室 ────────────────────────────────────────────
+let chatLog = [];
+try { chatLog = JSON.parse(localStorage.getItem("ttp.chat") || "[]"); } catch {}
+let chatBusy = false;
+
+// 給導遊的行程+天氣摘要(每次發問即時產生,永遠是最新狀態)
+function tripDigest() {
+  const lines = [];
+  lines.push("出發日 2026-07-17(五)至 07-20(一),8 人自駕,新竹出發。住宿:D1 墾丁芃家 Villa、D2 廷海特潮流民宿(台東)、D3 熙家民宿(花蓮)。");
+  for (const day of data.days) {
+    lines.push(`【${day.name}·${day.weekday}】路線:${routeOf(day)}`);
+    lines.push("時刻:" + day.items.map((it) => `${it.time} ${it.title}`).join(";"));
+    if (day.trafficTips?.length) lines.push("路況提示:" + day.trafficTips.join(" / "));
+    if (day.timeControls?.length) lines.push("時間控制:" + day.timeControls.join(" / "));
+    if (day.rainPlan?.length) lines.push("雨天備案:" + day.rainPlan.join(" / "));
+    if (day.restaurants?.length) lines.push("餐廳:" + day.restaurants.map((r) => `${r.meal}→首選 ${r.first.map((x) => x.split(":")[0].replace("訂|", "")).join("、")};備案 ${r.backup.map((x) => x.split(":")[0]).join("、")}`).join(" | "));
+    if (day.alternates?.length) lines.push("沿途備選:" + day.alternates.map((a) => a.split(":")[0]).join("、"));
+  }
+  try {
+    const start = tripStartDate();
+    const wx = [];
+    data.days.forEach((day, idx) => {
+      const date = new Date(start); date.setDate(date.getDate() + idx);
+      const iso = localISO(date);
+      const s = (WEATHER_POINTS[day.id] || []).map(([n, lat, lon]) => {
+        const dl = weather.points[lat + "," + lon]; if (!dl) return null;
+        const di = dl.time.indexOf(iso); if (di < 0) return null;
+        return `${n} ${Math.round(dl.temperature_2m_max[di])}°/☔${dl.precipitation_probability_max[di]}%/${fmtMm(dl.precipitation_sum[di]) ?? 0}mm`;
+      }).filter(Boolean).join("、");
+      if (s) wx.push(`${day.name}:${s}`);
+    });
+    if (wx.length) lines.push("最新天氣預報(日雨量):" + wx.join(";"));
+  } catch {}
+  if (data.preTrip?.length) lines.push("行前確認:" + data.preTrip.map((p) => (p.done ? "✅" : "⬜") + p.text.slice(0, 16)).join(" / "));
+  return lines.join("\n");
+}
+
+function renderChat() {
+  const box = $("#chat-msgs");
+  if (!box) return;
+  const welcome = chatLog.length ? "" : `<div class="chat-msg guide">你好${currentUser ? "," + esc(currentUser) : ""}!我是你們這趟的 AI 導遊 🧭 行程、天氣、雨天備案、在地美食都可以問我。例如:「Day 2 幾點要出發?」「三仙台下雨怎麼辦?」</div>`;
+  box.innerHTML = welcome
+    + chatLog.map((m) => `<div class="chat-msg ${m.role === "user" ? "me" : "guide"}">${esc(m.content)}</div>`).join("")
+    + (chatBusy ? `<div class="chat-msg guide typing">🧭 導遊思考中…</div>` : "");
+  box.scrollTop = box.scrollHeight;
+}
+
+async function sendChat() {
+  const input = $("#chat-input");
+  const text = input.value.trim();
+  if (!text || chatBusy) return;
+  chatLog.push({ role: "user", content: text });
+  input.value = "";
+  chatBusy = true;
+  renderChat();
+  try {
+    const sys = [
+      "你是這趟四天三夜(墾丁·台東·花蓮)旅程的隨團專業導遊,帶團 20 年,親切、務實、有話直說。",
+      "以下是「最新」行程與天氣資料(以此為準,不要編造不存在的行程):",
+      tripDigest(),
+      `今天日期:${new Date().toLocaleDateString("zh-TW", { month: "long", day: "numeric", weekday: "long" })}。發問的團員:${currentUser || "團員"}。`,
+      "回答規則:台灣慣用繁體中文;引用行程一律用具體時刻;建議要可執行(講清楚幾點、去哪、怎麼做);與行程無關的問題也可簡潔回答;預設 150 字內,團員要求詳細時再展開。",
+    ].join("\n");
+    const ep = aiEndpoint("deepseek");
+    const res = await fetch(ep.url, {
+      method: "POST",
+      headers: ep.headers,
+      body: JSON.stringify({
+        model: DEEPSEEK_MODEL,
+        messages: [{ role: "system", content: sys }, ...chatLog.slice(-12)],
+        temperature: 0.6,
+        max_tokens: 900,
+      }),
+    });
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      throw new Error(e.error?.message || e.error || `HTTP ${res.status}`);
+    }
+    const j = await res.json();
+    chatLog.push({ role: "assistant", content: j.choices[0].message.content.trim() });
+  } catch (e) {
+    chatLog.push({ role: "assistant", content: `⚠️ 連線失敗:${e.message},請稍後再試。` });
+  }
+  chatBusy = false;
+  if (chatLog.length > 60) chatLog = chatLog.slice(-60);
+  localStorage.setItem("ttp.chat", JSON.stringify(chatLog));
+  renderChat();
+}
+
 // ─── 使用者/設定/紀錄 ─────────────────────────────────────────
 function showLogin() {
   $("#login-overlay").classList.remove("hidden");
@@ -1266,6 +1355,23 @@ function bindGlobalEvents() {
   $("#btn-user").onclick = showLogin;
   $("#btn-history").onclick = openHistory;
   $("#btn-undo").onclick = undo;
+
+  // AI 導遊聊天室:點按鈕跳出/收合
+  $("#chat-fab").onclick = () => {
+    const p = $("#chat-panel");
+    p.classList.toggle("hidden");
+    if (!p.classList.contains("hidden")) { renderChat(); setTimeout(() => $("#chat-input").focus(), 60); }
+  };
+  $("#chat-close").onclick = () => $("#chat-panel").classList.add("hidden");
+  $("#chat-clear").onclick = () => {
+    if (!chatLog.length || confirm("清空與 AI 導遊的對話?(只影響這台裝置)")) {
+      chatLog = [];
+      localStorage.removeItem("ttp.chat");
+      renderChat();
+    }
+  };
+  $("#chat-send").onclick = sendChat;
+  $("#chat-input").addEventListener("keydown", (e) => { if (e.key === "Enter") sendChat(); });
 
   $("#item-save").onclick = saveItem;
   $("#item-cancel").onclick = () => $("#item-modal").classList.add("hidden");

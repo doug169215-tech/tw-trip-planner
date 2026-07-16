@@ -43,9 +43,28 @@
 <main id="main-content"></main>
 
 <footer class="app-footer">
-  <p id="sync-status" class="sync-status">☁️ 自動同步已啟用</p>
+  <div class="footer-row">
+    <p id="sync-status" class="sync-status">☁️ 自動同步已啟用</p>
+    <button id="chat-fab" class="chat-fab" title="問行程、天氣、備案,AI 導遊隨時在線">💬 AI 導遊</button>
+  </div>
   <p class="footer-note">拖曳卡片左側 ⠿ 可調整順序(可跨天移動)· 按卡片右側 ✏️ 可編輯 · 修改會自動同步給全團並記錄操作者</p>
 </footer>
+
+<!-- AI 導遊聊天室 -->
+<div id="chat-panel" class="chat-panel hidden">
+  <div class="chat-head">
+    🧭 AI 導遊
+    <span class="chat-sub">熟知你們的行程與天氣</span>
+    <span class="spacer"></span>
+    <button id="chat-clear" class="chat-iconbtn" title="清空對話">🗑️</button>
+    <button id="chat-close" class="chat-iconbtn" title="關閉">✕</button>
+  </div>
+  <div id="chat-msgs" class="chat-msgs"></div>
+  <div class="chat-inputrow">
+    <input id="chat-input" type="text" placeholder="問我行程、天氣、雨天備案、在地美食…" maxlength="500">
+    <button id="chat-send" class="btn btn-primary">送出</button>
+  </div>
+</div>
 
 <!-- 行程點編輯 -->
 <div id="item-modal" class="overlay hidden">
