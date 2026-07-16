@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-16T01:29:53.035Z",
+  "updatedAt": "2026-07-16T01:30:46.966Z",
   "startDate": "2026-07-17",
   "title": "四天三夜|墾丁 · 台東 · 花蓮",
   "subtitle": "8 人自駕 · 新竹出發(週五-週一)",
@@ -591,32 +591,32 @@
         },
         {
           "id": "d2-03",
-          "time": "11:00-12:00",
+          "time": "12:10-13:10",
           "title": "台東午餐",
           "type": "meal",
           "note": "餐廳首選/備案見下方推薦",
           "intro": "",
           "travel": {
-            "minutes": 120,
+            "minutes": 130,
             "note": "台26 → 台9 南迴公路"
           }
         },
         {
           "id": "d2-07",
-          "time": "14:15-16:50",
+          "time": "13:40-16:15",
           "title": "鹿野高台",
           "type": "spot",
           "note": "停車、市集、拍照、找觀賞位置",
           "intro": "海拔約 350 公尺的高台地,可俯瞰卑南溪縱谷與花東縱谷稻田,視野遼闊,是台灣國際熱氣球嘉年華的主場地,也是飛行傘體驗勝地;活動期間山坡草地滿是野餐人潮。",
           "travel": {
-            "minutes": 40
+            "minutes": 30
           },
           "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/%E9%B9%BF%E9%87%8E%E9%AB%98%E5%8F%B0_Luye_Gaotai_-_panoramio.jpg/960px-%E9%B9%BF%E9%87%8E%E9%AB%98%E5%8F%B0_Luye_Gaotai_-_panoramio.jpg",
           "imgCredit": "lienyuan lee · CC BY 3.0 / Wikimedia Commons"
         },
         {
           "id": "d2-08",
-          "time": "17:00-18:30",
+          "time": "16:15-17:45",
           "title": "吉伊卡哇熱氣球下午場",
           "type": "spot",
           "note": "官方下午場 17:00-18:30(已確認 7/18 週六照常、非公休日);提早佔位",
@@ -629,25 +629,25 @@
         },
         {
           "id": "d2-10",
-          "time": "19:20-20:45",
+          "time": "18:15-19:40",
           "title": "台東晚餐+鐵花新聚落夜逛",
           "type": "meal",
           "note": "",
           "intro": "",
           "travel": {
-            "minutes": 50,
+            "minutes": 30,
             "note": "鹿野 → 台東市區;熱氣球散場車多,已預留緩衝"
           }
         },
         {
           "id": "d2-11",
-          "time": "20:50",
+          "time": "19:50",
           "title": "入住民宿、休息",
           "type": "stay",
           "note": "",
           "intro": "",
           "travel": {
-            "minutes": 5
+            "minutes": 10
           }
         }
       ],
@@ -1422,6 +1422,11 @@
     }
   ],
   "history": [
+    {
+      "ts": "2026-07-16T01:30:46.966Z",
+      "user": "狗狗",
+      "text": "AI 重排 Day 2 時間與車程(更新 10 處)"
+    },
     {
       "ts": "2026-07-16T01:29:53.035Z",
       "user": "狗狗",
