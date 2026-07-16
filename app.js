@@ -516,6 +516,7 @@ function renderDay(day) {
       ${renderList("🧭 沿途備選", day.alternates)}
       ${renderList("⏱️ 時間控制", day.timeControls)}
       ${renderList("☔ 雨天備案(依 7/17-7/20 預報)", day.rainPlan)}
+      ${renderSpots("📸 吉伊卡哇人魚島打卡點", day.photoSpots)}
       ${renderRecommend(day)}
     </div>
   </section>`;
@@ -578,6 +579,14 @@ function renderRestaurants(day) {
 function renderList(title, arr) {
   if (!arr || !arr.length) return "";
   return `<div class="extra-block"><h3>${title}</h3><ul>${arr.map((a) => `<li>${esc(a)}</li>`).join("")}</ul></div>`;
+}
+
+// 打卡點清單:每項 {text, url},url 為 Google Maps 連結
+function renderSpots(title, arr) {
+  if (!arr || !arr.length) return "";
+  return `<div class="extra-block"><h3>${title}</h3><ul>${arr.map((s) =>
+    `<li>${esc(s.text)}${s.url ? ` <a class="map-link" href="${esc(s.url)}" target="_blank" rel="noopener">📍 地圖</a>` : ""}</li>`
+  ).join("")}</ul></div>`;
 }
 
 // 當天推薦名單(每家:店名 + 營業時間 + 介紹 + Google Maps 連結),放在當天最下方

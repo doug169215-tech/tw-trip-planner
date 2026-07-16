@@ -317,6 +317,12 @@ main { max-width: 60rem; margin: 0 auto; padding: 1rem 1.2rem; }
 .resto-meal { font-weight: 800; margin-top: .5em; }
 .resto-meal:first-child { margin-top: 0; }
 .resto-tag { font-size: .75rem; font-weight: 800; border-radius: 999px; padding: .05em .5em; margin-right: .35em; }
+.map-link {
+  color: var(--sea); font-weight: 800; font-size: .74rem; text-decoration: none;
+  background: rgba(255, 255, 255, .88); border-radius: 999px; padding: .05em .55em;
+  white-space: nowrap;
+}
+.map-link:hover { filter: brightness(1.05); }
 .tag-first { background: rgba(255, 255, 255, .9); color: #2c7a4b; }
 .tag-backup { background: rgba(255, 255, 255, .9); color: var(--sun); }
 
