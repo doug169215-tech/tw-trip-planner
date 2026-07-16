@@ -183,6 +183,10 @@ main { max-width: 60rem; margin: 0 auto; padding: 1rem 1.2rem; }
   font-weight: 800; font-size: .9rem; margin: .9em 0 .35em;
   padding-bottom: .2em; border-bottom: 1px solid rgba(255, 255, 255, .3);
 }
+.local-hint {
+  font-size: .68rem; font-weight: 400; color: var(--ink-soft);
+  margin-left: .5em; vertical-align: middle;
+}
 .pack-progress {
   font-size: .72rem; font-weight: 800; margin-left: .6em;
   background: rgba(255, 255, 255, .88); color: var(--sea);

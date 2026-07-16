@@ -19,6 +19,8 @@ let syncTimer = null;     // 自動上傳的 debounce 計時器
 let syncing = false;
 let undoStack = [];       // 復原快照(僅本次瀏覽階段、僅自己的修改,最多 20 步)
 let lastSnapshot = null;  // 上一次穩定狀態的深拷貝
+let localChecks = {};     // 行前確認+攜帶物品的勾選狀態(僅存本機,不上傳)
+try { localChecks = JSON.parse(localStorage.getItem("ttp.checks") || "{}"); } catch {}
 const proxyUrl = (p) => PROXY + p;
 
 const $ = (sel) => document.querySelector(sel);
@@ -271,15 +273,12 @@ function renderPanels() {
   const main = $("#main-content");
   main.innerHTML = renderOverview() + data.days.map(renderDay).join("");
 
-  // 綁定總覽 checklist(行前確認+攜帶物品共用)
+  // 綁定總覽 checklist(行前確認+攜帶物品):勾選狀態只存本機,不上傳、不進紀錄
   main.querySelectorAll(".checklist-item input").forEach((cb) => {
     cb.onchange = () => {
-      const isPacking = cb.dataset.list === "packing";
-      const list = isPacking ? (data.packing || []) : data.preTrip;
-      const item = list.find((p) => p.id === cb.dataset.id);
-      if (!item) return;
-      item.done = cb.checked;
-      commit(`${cb.checked ? "勾選" : "取消勾選"}${isPacking ? "攜帶物品" : "行前確認"}:「${item.text.slice(0, 20)}…」`);
+      if (cb.checked) localChecks[cb.dataset.id] = true;
+      else delete localChecks[cb.dataset.id];
+      localStorage.setItem("ttp.checks", JSON.stringify(localChecks));
       renderPanels();
     };
   });
@@ -444,10 +443,10 @@ function renderOverview() {
         </details>`).join("")}
     </div>
     <div class="day-head">
-      <h2>✅ 行前確認清單</h2>
+      <h2>✅ 行前確認清單 <small class="local-hint">勾選只存在自己的裝置</small></h2>
       ${data.preTrip.filter((p) => p.id !== "auto-daily").map((p) => `
-        <label class="checklist-item ${p.done ? "done" : ""}">
-          <input type="checkbox" data-id="${p.id}" ${p.done ? "checked" : ""}>
+        <label class="checklist-item ${localChecks[p.id] ? "done" : ""}">
+          <input type="checkbox" data-id="${p.id}" ${localChecks[p.id] ? "checked" : ""}>
           <span>${esc(p.text)}</span>
         </label>`).join("")}
     </div>
@@ -465,16 +464,16 @@ function renderPacking() {
     if (!g) { g = { cat: it.cat, items: [] }; groups.push(g); }
     g.items.push(it);
   }
-  const doneCount = items.filter((i) => i.done).length;
+  const doneCount = items.filter((i) => localChecks[i.id]).length;
   return `
   <div class="day-head">
     <h2>🎒 攜帶物品清單(導遊建議)<small class="pack-progress">${doneCount}/${items.length}</small></h2>
-    <p class="pack-note">依本次路線(海岸地質景點+鹿野高台+蘇花)與 7/17-7/20 天氣預報(高溫 29-32°、午後雷陣雨機率高)整理。</p>
+    <p class="pack-note">依本次路線(海岸地質景點+鹿野高台+蘇花)與 7/17-7/20 天氣預報(高溫 29-32°、午後雷陣雨機率高)整理。勾選狀態只存在自己的裝置,各自打包各自勾 ✔️</p>
     ${groups.map((g) => `
       <p class="pack-cat">${esc(g.cat)}</p>
       ${g.items.map((p) => `
-        <label class="checklist-item ${p.done ? "done" : ""}">
-          <input type="checkbox" data-id="${p.id}" data-list="packing" ${p.done ? "checked" : ""}>
+        <label class="checklist-item ${localChecks[p.id] ? "done" : ""}">
+          <input type="checkbox" data-id="${p.id}" data-list="packing" ${localChecks[p.id] ? "checked" : ""}>
           <span>${esc(p.text)}</span>
         </label>`).join("")}
     `).join("")}
@@ -1275,7 +1274,7 @@ function tripDigest() {
     });
     if (wx.length) lines.push("最新天氣預報(日雨量):" + wx.join(";"));
   } catch {}
-  if (data.preTrip?.length) lines.push("行前確認:" + data.preTrip.map((p) => (p.done ? "✅" : "⬜") + p.text.slice(0, 16)).join(" / "));
+  if (data.preTrip?.length) lines.push("行前確認(此裝置勾選狀態):" + data.preTrip.map((p) => (localChecks[p.id] ? "✅" : "⬜") + p.text.slice(0, 16)).join(" / "));
   return lines.join("\n");
 }
 
