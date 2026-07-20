@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-16T07:42:56.179Z",
+  "updatedAt": "2026-07-20T03:51:54.448Z",
   "startDate": "2026-07-17",
   "title": "四天三夜|墾丁 · 台東 · 花蓮",
   "subtitle": "8 人自駕 · 新竹出發(週五-週一)",
@@ -1230,19 +1230,6 @@
           "img": ""
         },
         {
-          "id": "d4-02",
-          "time": "08:30-09:30",
-          "title": "七星潭",
-          "type": "spot",
-          "note": "礫石海灘散步、拍照",
-          "intro": "花蓮最知名的礫石海灣,月牙形海岸線一路延伸至清水斷崖,踏浪、聽浪淘石聲、撿石(記得放回)皆宜;此處海流強勁禁止下水游泳。",
-          "travel": {
-            "minutes": 10
-          },
-          "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/2004.02.01.%E4%B8%83%E6%98%9F%E6%BD%AD_-_panoramio.jpg/960px-2004.02.01.%E4%B8%83%E6%98%9F%E6%BD%AD_-_panoramio.jpg",
-          "imgCredit": "MickeyDisney · CC BY-SA 3.0 / Wikimedia Commons"
-        },
-        {
           "id": "d4-04",
           "time": "09:50-10:10",
           "title": "清水斷崖/崇德休憩區",
@@ -1254,6 +1241,19 @@
           },
           "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Taiwan_2009_CingShui_Cliffs_on_SuHua_Highway_FRD_6762_Pano_Extracted.jpg/960px-Taiwan_2009_CingShui_Cliffs_on_SuHua_Highway_FRD_6762_Pano_Extracted.jpg",
           "imgCredit": "Fred Hsu · CC BY-SA 3.0 / Wikimedia Commons"
+        },
+        {
+          "id": "d4-02",
+          "time": "08:30-09:30",
+          "title": "七星潭",
+          "type": "spot",
+          "note": "礫石海灘散步、拍照",
+          "intro": "花蓮最知名的礫石海灣,月牙形海岸線一路延伸至清水斷崖,踏浪、聽浪淘石聲、撿石(記得放回)皆宜;此處海流強勁禁止下水游泳。",
+          "travel": {
+            "minutes": 10
+          },
+          "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/2004.02.01.%E4%B8%83%E6%98%9F%E6%BD%AD_-_panoramio.jpg/960px-2004.02.01.%E4%B8%83%E6%98%9F%E6%BD%AD_-_panoramio.jpg",
+          "imgCredit": "MickeyDisney · CC BY-SA 3.0 / Wikimedia Commons"
         },
         {
           "id": "d4-06",
@@ -1460,6 +1460,11 @@
     }
   ],
   "history": [
+    {
+      "ts": "2026-07-20T03:51:54.448Z",
+      "user": "家甄",
+      "text": "調整「清水斷崖/崇德休憩區」在 Day 4 的順序(第 3 → 第 2)"
+    },
     {
       "ts": "2026-07-16T07:42:56.179Z",
       "user": "系統",
